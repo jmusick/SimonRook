@@ -1,0 +1,96 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site";
+
+const canonicalUrl = `${SITE_URL}/privacy-policy/`;
+
+/**
+ * Bump this whenever the substance of the policy changes — particularly if
+ * analytics, an email signup, or affiliate links are ever added.
+ */
+const lastUpdated = "August 16, 2026";
+---
+
+<Layout
+	title={`Privacy Policy — ${SITE_NAME}`}
+	description={`How ${SITE_NAME}'s website handles visitor data.`}
+	canonicalUrl={canonicalUrl}
+	robots="index,follow"
+>
+	<div class="page page-narrow">
+		<span class="eyebrow">Legal</span>
+		<hr class="rule-short" />
+		<h1>Privacy Policy</h1>
+		<p class="eyebrow" style="color: var(--bone-3); margin-top: var(--space-4);">
+			Last updated {lastUpdated}
+		</p>
+
+		<div class="prose" style="margin-top: var(--space-6);">
+			<p class="lede">
+				This is a static website. It has no accounts, no comment system, no advertising,
+				no analytics, and no mailing list. Nothing you do here is tracked across sites.
+			</p>
+
+			<h2>What this site collects</h2>
+
+			<p>
+				Nothing directly. There are no forms, no cookies set by this site, and no scripts
+				that record what you read or where you go next.
+			</p>
+
+			<h2>What the host records</h2>
+
+			<p>
+				The site is served by Cloudflare Pages. Like any web host, Cloudflare processes
+				standard request data — IP address, browser user-agent, requested page, and
+				timestamp — in order to deliver pages and protect the service from abuse. This is
+				handled under Cloudflare's own privacy terms, and it is not used here to build a
+				profile of you.
+			</p>
+
+			<h2>Fonts</h2>
+
+			<p>
+				Typefaces are loaded from Google Fonts. Your browser therefore makes a request to
+				Google's servers, which discloses your IP address and user-agent to Google. No
+				identifying information is sent by this site along with that request.
+			</p>
+
+			<h2>Links to other sites</h2>
+
+			<p>
+				Links to booksellers such as Amazon take you to services with their own privacy
+				practices, which govern once you leave this site. These are plain links: no
+				affiliate tracking, referral codes, or commissions are attached to them.
+			</p>
+
+			<h2>Email</h2>
+
+			<p>
+				If you write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>, your
+				message and address are kept only for as long as needed to correspond with you.
+				They are not added to a mailing list, sold, or shared.
+			</p>
+
+			<h2>Children</h2>
+
+			<p>
+				This site is intended for adults and is not directed to children under 13.
+			</p>
+
+			<h2>Changes</h2>
+
+			<p>
+				If this policy changes — for instance, if a newsletter is ever added — the revised
+				version will be posted here with a new date above.
+			</p>
+
+			<h2>Contact</h2>
+
+			<p>
+				Questions about this policy can go to
+				<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+			</p>
+		</div>
+	</div>
+</Layout>

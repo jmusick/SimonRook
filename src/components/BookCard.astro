@@ -1,0 +1,46 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import { formatPublished, primaryRetailer, type Book } from "../data/books";
+
+interface Props {
+	book: Book;
+}
+
+const { book } = Astro.props;
+const href = `/books/${book.slug}/`;
+const retailer = primaryRetailer(book);
+---
+
+<article class="book-card">
+	<a href={href} class="book-cover" aria-label={`${book.title} — details`}>
+		<Image src={book.cover} alt={book.coverAlt} widths={[240, 480]} sizes="240px" loading="lazy" />
+	</a>
+
+	<div class="book-card-body">
+		{book.available
+			? <span class="badge">Available now</span>
+			: <span class="badge badge-neutral">Coming soon</span>}
+
+		<h2 class="book-card-title"><a href={href}>{book.title}</a></h2>
+		<p class="book-subtitle">{book.subtitle}</p>
+		<p>{book.blurb}</p>
+
+		<dl class="detail-list">
+			<dt>Format</dt>
+			<dd>{book.format}</dd>
+			<dt>Published</dt>
+			<dd>{formatPublished(book.published)}</dd>
+		</dl>
+
+		<div class="button-row">
+			<a class="btn btn-secondary" href={href}>About this book</a>
+			{retailer && (
+				<a class="btn btn-primary" href={retailer.href} target="_blank" rel="noopener noreferrer">
+					<Icon name={retailer.icon} aria-hidden="true" />
+					Read on {retailer.label}
+				</a>
+			)}
+		</div>
+	</div>
+</article>

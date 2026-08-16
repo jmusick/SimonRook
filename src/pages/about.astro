@@ -1,0 +1,110 @@
+---
+import { Icon } from "astro-icon/components";
+import Layout from "../layouts/Layout.astro";
+import { SITE_NAME, SITE_URL } from "../config/site";
+import { FEATURED_BOOK } from "../data/books";
+
+const canonicalUrl = `${SITE_URL}/about/`;
+const description = `About ${SITE_NAME} — how these books are written, who they are for, and what they promise.`;
+const book = FEATURED_BOOK;
+---
+
+<Layout
+	title={`About — ${SITE_NAME}`}
+	description={description}
+	canonicalUrl={canonicalUrl}
+	active="about"
+>
+	<div class="page page-narrow">
+		<span class="eyebrow">About</span>
+		<hr class="rule-short" />
+		<h1>Simon Rook</h1>
+
+		<div class="prose" style="margin-top: var(--space-6);">
+			<p class="lede">
+				These books are about one problem: what a thoughtful person should do when
+				careful thinking stops producing answers.
+			</p>
+
+			<p>
+				That problem has a particular shape. It rarely feels like avoidance. It feels like
+				diligence — replaying the conversation to get it right, comparing the options one
+				more time, waiting one more night before deciding. The effort is real. It just
+				doesn't finish, because the missing answer belongs to another person, to an event
+				that hasn't happened, or to a future no amount of review can reach.
+			</p>
+
+			<p>
+				Ancient philosophy turns out to be unusually good on this, and Stoicism most of
+				all. The Stoics did not live with email, performance reviews, or an endless supply
+				of online opinion, but the mind they studied is the same one. They separated an
+				event from our judgment about it. They distinguished what depends on our choices
+				from what stays exposed to chance and other people. They asked how a person could
+				act well while outcomes remained uncertain — which is the only condition anyone
+				ever actually acts in.
+			</p>
+
+			<h2>How these books are written</h2>
+
+			<p>
+				They are practical before they are historical. Each one starts from a recognizable
+				situation rather than an ancient quotation, introduces one idea at a time in plain
+				language, and is explicit about what that idea does <em>not</em> mean. Every
+				chapter ends with something to actually do.
+			</p>
+
+			<p>
+				Where ancient texts are quoted, they are checked against named editions and cited
+				in endnotes, with public-domain translations preferred. Where an old translation is
+				needlessly difficult, it is paraphrased and labelled as such. Modern applications
+				are marked as adaptations rather than presented as what a Stoic said.
+			</p>
+
+			<h2>What they will not do</h2>
+
+			<ul class="feature-list">
+				<li>
+					<Icon name="lucide:minus" aria-hidden="true" />
+					<span>
+						Present Stoicism as emotional suppression, or as becoming indifferent to
+						people and outcomes you care about.
+					</span>
+				</li>
+				<li>
+					<Icon name="lucide:minus" aria-hidden="true" />
+					<span>
+						Make medical or therapeutic promises, or suggest that philosophy is a
+						substitute for qualified care.
+					</span>
+				</li>
+				<li>
+					<Icon name="lucide:minus" aria-hidden="true" />
+					<span>
+						Treat calm as the point. Calm is a possible benefit of Stoic practice, not
+						its aim and not its definition of a life well lived.
+					</span>
+				</li>
+				<li>
+					<Icon name="lucide:minus" aria-hidden="true" />
+					<span>Wander into politics, religious framing, or inspirational quotation collecting.</span>
+				</li>
+			</ul>
+
+			<h2>Who they are for</h2>
+
+			<p>
+				Adults who are conscientious and analytical, who take things seriously, and who
+				have noticed that taking things seriously has started to cost them decisions. No
+				prior knowledge of philosophy is assumed anywhere.
+			</p>
+		</div>
+
+		<div class="button-row section-sm">
+			<a class="btn btn-primary" href={`/books/${book.slug}/`}>
+				<Icon name="lucide:book-open" aria-hidden="true" />
+				Read about the book
+			</a>
+			<a class="btn btn-ghost" href="/contact/">Get in touch</a>
+		</div>
+	</div>
+</Layout>

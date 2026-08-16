@@ -1,0 +1,72 @@
+---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE_NAME, SITE_URL } from "../config/site";
+
+interface Props {
+	title: string;
+	description: string;
+	canonicalUrl: string;
+	socialImageUrl?: string;
+	socialImageAlt?: string;
+	robots?: string;
+	structuredData?: Record<string, unknown> | Record<string, unknown>[];
+	active?: "home" | "books" | "about" | "contact";
+}
+
+const {
+	title,
+	description,
+	canonicalUrl,
+	socialImageUrl = `${SITE_URL}/og.png`,
+	socialImageAlt = `${SITE_NAME} — The Stoic Mind for Overthinkers`,
+	robots = "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+	structuredData,
+	active,
+} = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="stylesheet" href="/universal.css" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta name="author" content={SITE_NAME} />
+		<meta name="theme-color" content="#0a1120" />
+		<meta name="robots" content={robots} />
+		<meta name="googlebot" content={robots} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:site_name" content={SITE_NAME} />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={socialImageUrl} />
+		<meta property="og:image:alt" content={socialImageAlt} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:url" content={canonicalUrl} />
+		<meta name="twitter:image" content={socialImageUrl} />
+		<meta name="twitter:image:alt" content={socialImageAlt} />
+		{structuredData && (
+			<script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+		)}
+		<slot name="head" />
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<SiteHeader active={active} />
+		<main id="main">
+			<slot />
+		</main>
+		<SiteFooter />
+	</body>
+</html>

@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_NAME, SITE_URL } from "../config/site";
+---
+
+<Layout
+	title={`Page not found — ${SITE_NAME}`}
+	description="That page doesn't exist."
+	canonicalUrl={`${SITE_URL}/404/`}
+	robots="noindex,follow"
+>
+	<div class="page page-narrow">
+		<span class="eyebrow">404</span>
+		<hr class="rule-short" />
+		<h1>That page doesn't exist</h1>
+		<div class="prose" style="margin-top: var(--space-5);">
+			<p class="lede">
+				Which is, at least, a question with a definite answer. Try the
+				<a href="/books/">books</a> instead.
+			</p>
+		</div>
+		<div class="button-row section-sm">
+			<a class="btn btn-primary" href="/">Back to the home page</a>
+		</div>
+	</div>
+</Layout>

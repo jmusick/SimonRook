@@ -1,0 +1,120 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import Layout from "../layouts/Layout.astro";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "../config/site";
+import { FEATURED_BOOK, formatPublished, primaryRetailer } from "../data/books";
+
+const book = FEATURED_BOOK;
+const bookHref = `/books/${book.slug}/`;
+const retailer = primaryRetailer(book);
+const canonicalUrl = `${SITE_URL}/`;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: SITE_NAME,
+	url: canonicalUrl,
+	jobTitle: "Author",
+	description: SITE_DESCRIPTION,
+};
+---
+
+<Layout
+	title={`${SITE_NAME} — ${SITE_TAGLINE}`}
+	description={SITE_DESCRIPTION}
+	canonicalUrl={canonicalUrl}
+	structuredData={structuredData}
+	active="home"
+>
+	<section class="hero">
+		<div class="hero-inner">
+			<div class="hero-copy">
+				<span class="eyebrow">Author</span>
+				<h1 class="hero-title">Simon Rook</h1>
+				<p class="hero-sub">
+					I write practical philosophy for thoughtful people who think too much — books
+					about deciding, acting, and living well while the outcome is still uncertain.
+				</p>
+				<div class="button-row">
+					<a class="btn btn-primary btn-lg" href={bookHref}>
+						<Icon name="lucide:book-open" aria-hidden="true" />
+						Read about the book
+					</a>
+					<a class="btn btn-secondary btn-lg" href="/about/">About Simon</a>
+				</div>
+			</div>
+
+			<div class="hero-art-wrap">
+				<a href={bookHref} class="book-cover" aria-label={`${book.title} — details`}>
+					<Image
+						src={book.cover}
+						alt={book.coverAlt}
+						widths={[380, 760]}
+						sizes="(max-width: 900px) 260px, 380px"
+						loading="eager"
+					/>
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<div class="page">
+		<section>
+			<span class="eyebrow">The book</span>
+			<hr class="rule-short" />
+			<h2>{book.title}</h2>
+			<p class="book-subtitle" style="margin-top: var(--space-3);">{book.subtitle}</p>
+			<div class="prose" style="margin-top: var(--space-6);">
+				<p class="lede">{book.description[0]}</p>
+				<p>{book.description[1]}</p>
+			</div>
+
+			<dl class="detail-list" style="margin-top: var(--space-6); max-width: 520px;">
+				<dt>Format</dt>
+				<dd>{book.format}</dd>
+				<dt>Published</dt>
+				<dd>{formatPublished(book.published)}</dd>
+				<dt>Length</dt>
+				<dd>{book.wordCount}</dd>
+			</dl>
+
+			<div class="button-row" style="margin-top: var(--space-6);">
+				{retailer && (
+					<a
+						class="btn btn-primary btn-lg"
+						href={retailer.href}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Icon name={retailer.icon} aria-hidden="true" />
+						Read on {retailer.label}
+					</a>
+				)}
+				<a class="btn btn-ghost btn-lg" href={bookHref}>Full details</a>
+			</div>
+		</section>
+
+		<section class="section">
+			<span class="eyebrow">What it gives you</span>
+			<hr class="rule-short" />
+			<h2>By the end of the book</h2>
+			<ul class="feature-list" style="margin-top: var(--space-6); max-width: 62ch;">
+				{book.promises.map((item) => (
+					<li>
+						<Icon name="lucide:check" aria-hidden="true" />
+						<span>{item}</span>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="section">
+			<blockquote class="pullquote">
+				Instead of asking, “How can I make this turn out exactly as I want?” Stoicism asks,
+				“What is mine to do, and how can I do it well?”
+				<cite>From the introduction</cite>
+			</blockquote>
+		</section>
+	</div>
+</Layout>

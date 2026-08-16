@@ -1,0 +1,30 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import BookCard from "../../components/BookCard.astro";
+import { SITE_NAME, SITE_URL } from "../../config/site";
+import { BOOKS } from "../../data/books";
+
+const canonicalUrl = `${SITE_URL}/books/`;
+const description = `Books by ${SITE_NAME} — practical philosophy for thoughtful people who overthink.`;
+---
+
+<Layout
+	title={`Books — ${SITE_NAME}`}
+	description={description}
+	canonicalUrl={canonicalUrl}
+	active="books"
+>
+	<div class="page">
+		<span class="eyebrow">Catalogue</span>
+		<hr class="rule-short" />
+		<h1>Books</h1>
+		<p class="lede" style="margin-top: var(--space-4);">
+			Short, practical books about thinking clearly and acting well without waiting for
+			certainty that never arrives.
+		</p>
+
+		<div class="book-grid section">
+			{BOOKS.map((book) => <BookCard book={book} />)}
+		</div>
+	</div>
+</Layout>

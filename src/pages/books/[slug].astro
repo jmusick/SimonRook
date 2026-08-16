@@ -1,0 +1,160 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import Layout from "../../layouts/Layout.astro";
+import { SITE_NAME, SITE_URL } from "../../config/site";
+import { BOOKS, formatPublished, type Book } from "../../data/books";
+
+export function getStaticPaths() {
+	return BOOKS.map((book) => ({ params: { slug: book.slug }, props: { book } }));
+}
+
+interface Props {
+	book: Book;
+}
+
+const { book } = Astro.props;
+const canonicalUrl = `${SITE_URL}/books/${book.slug}/`;
+
+// Chapters are numbered continuously across parts, matching the manuscript.
+let chapterNumber = 0;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "Book",
+	name: book.title,
+	alternateName: `${book.title}: ${book.subtitle}`,
+	author: { "@type": "Person", name: SITE_NAME },
+	description: book.blurb,
+	bookFormat: "https://schema.org/EBook",
+	datePublished: book.published,
+	inLanguage: "en",
+	url: canonicalUrl,
+	image: `${SITE_URL}/og.png`,
+	...(book.retailers.length > 0 && {
+		offers: book.retailers.map((r) => ({
+			"@type": "Offer",
+			url: r.href,
+			availability: book.available
+				? "https://schema.org/InStock"
+				: "https://schema.org/PreOrder",
+		})),
+	}),
+};
+---
+
+<Layout
+	title={`${book.title} — ${SITE_NAME}`}
+	description={book.blurb}
+	canonicalUrl={canonicalUrl}
+	socialImageAlt={book.coverAlt}
+	structuredData={structuredData}
+	active="books"
+>
+	<div class="page">
+		<div class="book-layout">
+			<aside class="book-aside">
+				<div class="book-cover">
+					<Image
+						src={book.cover}
+						alt={book.coverAlt}
+						widths={[320, 640]}
+						sizes="(max-width: 900px) 300px, 320px"
+						loading="eager"
+					/>
+				</div>
+
+				<div class="retailers">
+					{book.retailers.map((r) => (
+						<a
+							class={`btn ${r.primary ? "btn-primary" : "btn-secondary"}`}
+							href={r.href}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<Icon name={r.icon} aria-hidden="true" />
+							Read on {r.label}
+						</a>
+					))}
+				</div>
+
+				<dl class="detail-list">
+					<dt>Format</dt>
+					<dd>{book.format}</dd>
+					<dt>Published</dt>
+					<dd>{formatPublished(book.published)}</dd>
+					<dt>Length</dt>
+					<dd>{book.wordCount}</dd>
+					<dt>ASIN</dt>
+					<dd>{book.asin}</dd>
+				</dl>
+			</aside>
+
+			<div class="book-main">
+				<div>
+					{book.available
+						? <span class="badge">Available now</span>
+						: <span class="badge badge-neutral">Coming soon</span>}
+					<h1 class="book-title" style="margin-top: var(--space-4);">{book.title}</h1>
+					<p class="book-subtitle" style="margin-top: var(--space-4);">{book.subtitle}</p>
+				</div>
+
+				<div class="prose">
+					{book.description.map((para, i) => (
+						<p class={i === 0 ? "lede" : undefined}>{para}</p>
+					))}
+				</div>
+
+				<section>
+					<h2>By the end of the book</h2>
+					<ul class="feature-list" style="margin-top: var(--space-5);">
+						{book.promises.map((item) => (
+							<li>
+								<Icon name="lucide:check" aria-hidden="true" />
+								<span>{item}</span>
+							</li>
+						))}
+					</ul>
+				</section>
+
+				<section>
+					<h2>What's inside</h2>
+					<p style="margin-top: var(--space-4);">
+						Every chapter opens with a recognizable modern situation, introduces one Stoic
+						idea in plain language, says clearly what that idea does <em>not</em> mean, and
+						ends with a concrete exercise you can do the same day.
+					</p>
+					<ol class="contents" style="margin-top: var(--space-5);">
+						{book.parts.map((part) => (
+							<li class="contents-part">
+								<span class="contents-part-name">{part.name}</span>
+								{part.note && <p class="contents-note">{part.note}</p>}
+								{part.chapters.length > 0 && (
+									<ol class="contents-chapters">
+										{part.chapters.map((chapter) => {
+											chapterNumber += 1;
+											return (
+												<li>
+													<span class="contents-n">{chapterNumber}.</span>
+													<span>{chapter}</span>
+												</li>
+											);
+										})}
+									</ol>
+								)}
+							</li>
+						))}
+					</ol>
+				</section>
+
+				<section>
+					<h2>Reader note</h2>
+					<div class="notice" style="margin-top: var(--space-4);">
+						<Icon name="lucide:info" aria-hidden="true" />
+						<p>{book.readerNote}</p>
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
+</Layout>

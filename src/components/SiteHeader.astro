@@ -1,0 +1,79 @@
+---
+import { Icon } from "astro-icon/components";
+import { ACTIVE_SOCIALS, SITE_NAME, SITE_ROLE } from "../config/site";
+
+interface Props {
+	active?: "home" | "books" | "about" | "contact";
+}
+
+const { active = "home" } = Astro.props;
+---
+
+<header class="site-head">
+	<div class="site-head-inner">
+		<a href="/" class="brand-link" aria-label={`${SITE_NAME} — home`}>
+			<span class="brand-name">{SITE_NAME}</span>
+			<span class="brand-role">{SITE_ROLE}</span>
+		</a>
+
+		<button
+			type="button"
+			class="nav-toggle"
+			aria-expanded="false"
+			aria-controls="site-menu"
+			aria-label="Toggle menu"
+		>
+			<Icon name="lucide:menu" class="nav-toggle-icon-open" aria-hidden="true" />
+			<Icon name="lucide:x" class="nav-toggle-icon-close" aria-hidden="true" />
+		</button>
+
+		<div class="site-head-right" id="site-menu">
+			<nav class="site-nav" aria-label="Primary">
+				<a class={active === "home" ? "active" : undefined} href="/">Home</a>
+				<a class={active === "books" ? "active" : undefined} href="/books/">Books</a>
+				<a class={active === "about" ? "active" : undefined} href="/about/">About</a>
+				<a class={active === "contact" ? "active" : undefined} href="/contact/">Contact</a>
+			</nav>
+
+			{ACTIVE_SOCIALS.length > 0 && (
+				<>
+					<div class="site-head-divider" aria-hidden="true"></div>
+					<nav class="social-nav" aria-label="Author profiles">
+						{ACTIVE_SOCIALS.map((s) => (
+							<a
+								href={s.href}
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label={s.label}
+								class="social-link"
+							>
+								<Icon name={s.icon} aria-hidden="true" />
+							</a>
+						))}
+					</nav>
+				</>
+			)}
+		</div>
+	</div>
+</header>
+
+<script>
+	const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+	const menu = document.getElementById("site-menu");
+
+	if (toggle && menu) {
+		toggle.addEventListener("click", () => {
+			const isOpen = menu.classList.toggle("is-open");
+			toggle.classList.toggle("is-open", isOpen);
+			toggle.setAttribute("aria-expanded", String(isOpen));
+		});
+
+		menu.addEventListener("click", (event) => {
+			if (event.target instanceof HTMLElement && event.target.closest("a")) {
+				menu.classList.remove("is-open");
+				toggle.classList.remove("is-open");
+				toggle.setAttribute("aria-expanded", "false");
+			}
+		});
+	}
+</script>

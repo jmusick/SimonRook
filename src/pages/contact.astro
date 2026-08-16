@@ -1,0 +1,67 @@
+---
+import { Icon } from "astro-icon/components";
+import Layout from "../layouts/Layout.astro";
+import { ACTIVE_SOCIALS, CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site";
+
+const canonicalUrl = `${SITE_URL}/contact/`;
+const description = `Contact ${SITE_NAME} — reader mail, press, and rights enquiries.`;
+---
+
+<Layout
+	title={`Contact — ${SITE_NAME}`}
+	description={description}
+	canonicalUrl={canonicalUrl}
+	active="contact"
+>
+	<div class="page page-narrow">
+		<span class="eyebrow">Contact</span>
+		<hr class="rule-short" />
+		<h1>Get in touch</h1>
+
+		<div class="prose" style="margin-top: var(--space-6);">
+			<p class="lede">
+				Reader mail, press enquiries, translation and rights questions all reach the same
+				inbox. It's read by a person, though not always quickly.
+			</p>
+
+			<p class="panel" style="font-size: var(--text-body-lg);">
+				<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+			</p>
+
+			<p>
+				If you're writing about something in a book, mentioning the chapter helps. If
+				you've found an error — a misattributed quotation, a broken citation, a translation
+				that doesn't hold up — please say so plainly. Corrections are welcome and get made.
+			</p>
+
+			<h2>One thing this inbox can't do</h2>
+
+			<p>
+				It can't give personal advice about a mental-health situation. The books are
+				philosophy, not treatment, and no email exchange is a substitute for talking to
+				someone qualified. If anxiety, compulsive behavior, depression, trauma, or lost
+				sleep is interfering with daily life, that's worth taking to a professional rather
+				than to an author.
+			</p>
+		</div>
+
+		{ACTIVE_SOCIALS.length > 0 && (
+			<section class="section-sm">
+				<h2>Elsewhere</h2>
+				<nav class="social-nav" style="margin-top: var(--space-4);" aria-label="Author profiles">
+					{ACTIVE_SOCIALS.map((s) => (
+						<a
+							href={s.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={s.label}
+							class="social-link"
+						>
+							<Icon name={s.icon} aria-hidden="true" />
+						</a>
+					))}
+				</nav>
+			</section>
+		)}
+	</div>
+</Layout>
