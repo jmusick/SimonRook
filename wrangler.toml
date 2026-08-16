@@ -5,3 +5,15 @@
 name = "simonrook"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-08-16"
+
+# Plaintext variables for the Pages Function MUST live here, not in the
+# dashboard. When a Pages project has a wrangler.toml, Cloudflare ignores
+# dashboard-configured plaintext variables — secrets still apply, which is why
+# TURNSTILE_SECRET_KEY and CLOUDFLARE_API_TOKEN work from the dashboard while
+# CLOUDFLARE_ACCOUNT_ID silently didn't, and the contact form answered 503.
+#
+# Secrets never go here. Set them with `wrangler pages secret put NAME` or in
+# the dashboard.
+[vars]
+# Not a credential — it appears in every dashboard URL for this account.
+CLOUDFLARE_ACCOUNT_ID = "fdabb6996edf7688fdaf7c8c367f7d08"

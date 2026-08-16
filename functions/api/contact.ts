@@ -77,9 +77,16 @@ const verifyTurnstile = async (
 	request: Request,
 	env: Env,
 	token: string,
-): Promise<{ ok: true } | { ok: false; status: number; error: string }> => {
+): Promise<{ ok: true } | { ok: false; status: number; error: string; code?: string }> => {
 	if (!env.TURNSTILE_SECRET_KEY) {
-		return { ok: false, status: 503, error: "The contact form is not configured." };
+		// `code` is for diagnosis, not display: the two "not configured" states are
+		// indistinguishable to a visitor but need telling apart from outside.
+		return {
+			ok: false,
+			status: 503,
+			error: "The contact form is not configured.",
+			code: "turnstile_unconfigured",
+		};
 	}
 
 	if (!token) {
@@ -231,11 +238,22 @@ const handlePost = async (request: Request, env: Env): Promise<Response> => {
 
 	const captcha = await verifyTurnstile(request, env, asString(payload.captchaToken));
 	if (!captcha.ok) {
-		return json({ error: captcha.error }, captcha.status);
+		return json({ error: captcha.error, ...(captcha.code && { code: captcha.code }) }, captcha.status);
 	}
 
 	if (!env.CLOUDFLARE_API_TOKEN || !env.CLOUDFLARE_ACCOUNT_ID) {
-		return json({ error: "The contact form is not configured." }, 503);
+		return json(
+			{
+				error: "The contact form is not configured.",
+				code: "email_unconfigured",
+				// Names the missing half without disclosing any value.
+				missing: [
+					!env.CLOUDFLARE_API_TOKEN && "CLOUDFLARE_API_TOKEN",
+					!env.CLOUDFLARE_ACCOUNT_ID && "CLOUDFLARE_ACCOUNT_ID",
+				].filter(Boolean),
+			},
+			503,
+		);
 	}
 
 	const { text, html } = buildBodies({ name, email, subject, message });

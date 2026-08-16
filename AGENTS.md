@@ -134,9 +134,19 @@ Configuration is split across two mechanisms that are easy to confuse:
 | `.env` | build time, by Astro | `PUBLIC_TURNSTILE_SITE_KEY` — optional override only | `.env.example` |
 | `.dev.vars` | run time, by the Function | token, account ID, addresses, Turnstile secret | `.dev.vars.example` |
 
-Both are gitignored; the `.example` files are not. The runtime values are Pages
-secrets. Missing Email Sending secrets mean the endpoint answers `503` rather
-than failing silently.
+Both are gitignored; the `.example` files are not. Missing Email Sending config
+means the endpoint answers `503` rather than failing silently; the response
+carries a `code` (`turnstile_unconfigured` / `email_unconfigured`) and, for the
+latter, the names of the missing variables — visitors see only the generic
+message, but the cause is diagnosable with one `curl`.
+
+**Because this project has a `wrangler.toml`, Cloudflare ignores plaintext
+variables set in the Pages dashboard.** Secrets set there still apply. That
+asymmetry cost two deploys: `CLOUDFLARE_ACCOUNT_ID` was set as dashboard Text
+and silently never reached the Function. Plaintext vars belong in
+`wrangler.toml`'s `[vars]`; secrets belong in the dashboard or
+`wrangler pages secret put`. Never put a secret in `[vars]` — that file is
+committed.
 
 The Turnstile **site key is committed** in `src/config/site.ts` as
 `TURNSTILE_SITE_KEY`, not supplied by the environment. It's public — it ships in
