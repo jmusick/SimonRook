@@ -104,7 +104,7 @@ export const SOCIALS: SocialLink[] = [
 	},
 	{
 		label: "TikTok",
-		href: "https://www.tiktok.com/@simon.rook3",
+		href: "https://www.tiktok.com/@simon.rook.author",
 		icon: "simple-icons:tiktok",
 	},
 	{
