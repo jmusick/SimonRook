@@ -131,15 +131,20 @@ Configuration is split across two mechanisms that are easy to confuse:
 
 | Where | Read at | Holds | Example file |
 | --- | --- | --- | --- |
-| `.env` | build time, by Astro | `PUBLIC_TURNSTILE_SITE_KEY` (public) | `.env.example` |
+| `.env` | build time, by Astro | `PUBLIC_TURNSTILE_SITE_KEY` — optional override only | `.env.example` |
 | `.dev.vars` | run time, by the Function | token, account ID, addresses, Turnstile secret | `.dev.vars.example` |
 
-Both are gitignored; the `.example` files are not. In production the first is a
-Pages *build variable* (Text, so the build container can read it) and the rest
-are Pages *secrets*. Everything degrades closed: no Turnstile site key means the
-Contact page renders no form at all, and missing Email Sending secrets mean the
-endpoint answers `503` rather than failing silently. Because the site key is
-read at build time, changing it requires a redeploy, not just a save.
+Both are gitignored; the `.example` files are not. The runtime values are Pages
+secrets. Missing Email Sending secrets mean the endpoint answers `503` rather
+than failing silently.
+
+The Turnstile **site key is committed** in `src/config/site.ts` as
+`TURNSTILE_SITE_KEY`, not supplied by the environment. It's public — it ships in
+the HTML — and depending on a build variable proved fragile: the first
+production deploy rendered no form at all because the Pages build container
+never saw `PUBLIC_TURNSTILE_SITE_KEY`. The env var still overrides the committed
+default, but nothing breaks when it's absent. Don't revert this to
+environment-only; the failure is silent and looks like a code bug.
 
 `astro dev` always uses Cloudflare's always-passes Turnstile **test** key, even
 if a real one is in `.env` — the real widget is registered to the production

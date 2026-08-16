@@ -33,10 +33,15 @@ Variables, not in this repo:
 
 | Type | Name |
 | --- | --- |
-| Text | `PUBLIC_TURNSTILE_SITE_KEY` — read at build time; changing it needs a redeploy |
 | Text | `CLOUDFLARE_ACCOUNT_ID` |
 | Secret | `CLOUDFLARE_API_TOKEN` — Email Sending: Edit scope |
 | Secret | `TURNSTILE_SECRET_KEY` |
+
+The Turnstile *site* key is committed in
+[src/config/site.ts](src/config/site.ts) rather than set here — it is public and
+ships in the HTML, and a missing build variable silently produced a form-less
+Contact page on the first deploy. `PUBLIC_TURNSTILE_SITE_KEY` still overrides it
+if a deployment needs a different widget.
 
 `EMAIL_FROM_CONTACT` and `CONTACT_TO_EMAIL` are optional; the defaults compiled
 into the Function already match the live addresses. Preview deployments keep a

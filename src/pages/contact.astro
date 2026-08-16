@@ -1,30 +1,27 @@
 ---
 import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
-import { ACTIVE_SOCIALS, CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site";
+import {
+	ACTIVE_SOCIALS,
+	CONTACT_EMAIL,
+	SITE_NAME,
+	SITE_URL,
+	TURNSTILE_SITE_KEY,
+} from "../config/site";
 
 const canonicalUrl = `${SITE_URL}/contact/`;
 const description = `Contact ${SITE_NAME} — reader mail, press, and rights enquiries.`;
 
 /**
- * Turnstile's site key is public, but it's read from the environment rather than
- * committed so the key can differ per deployment. Without it there is no spam
- * protection, so a *production* build withholds the form entirely and falls back
- * to the plain address — the same "hide it rather than half-render it" approach
- * the social links take. Set PUBLIC_TURNSTILE_SITE_KEY in the Pages project's
- * build variables to switch it on.
- *
- * `astro dev` *always* uses Cloudflare's documented always-passes test key, even
- * if a real key is present in .env. The real widget is registered against the
- * production hostnames, so it renders an "invalid domain" error on localhost —
- * pinning dev to the test key means the form is always visible while working on
- * the page, and a production key can never be exercised locally by accident.
- * The test key is gated on DEV, so it can never reach a built site.
+ * `astro dev` always uses Cloudflare's documented always-passes test key. The
+ * real widget is registered against the production hostnames, so it renders an
+ * "invalid domain" error on localhost — pinning dev to the test key means the
+ * form is always visible while working on the page, and a production key can
+ * never be exercised locally by accident. Builds use TURNSTILE_SITE_KEY, which
+ * is committed with an environment override; see src/config/site.ts.
  */
 const TURNSTILE_DEV_TEST_KEY = "1x00000000000000000000AA";
-const turnstileSiteKey = import.meta.env.DEV
-	? TURNSTILE_DEV_TEST_KEY
-	: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const turnstileSiteKey = import.meta.env.DEV ? TURNSTILE_DEV_TEST_KEY : TURNSTILE_SITE_KEY;
 
 /**
  * `astro dev` serves pages but not Pages Functions, so /api/contact 404s here.

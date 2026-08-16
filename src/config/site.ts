@@ -33,6 +33,22 @@ export const GA_MEASUREMENT_ID: string | null = "G-44NBWJRNW2";
  */
 export const ANALYTICS_ID: string | null = import.meta.env.PROD ? GA_MEASUREMENT_ID : null;
 
+/**
+ * Cloudflare Turnstile site key for the contact form.
+ *
+ * Committed rather than build-variable-only, deliberately. It is public by
+ * definition — it ships in the page HTML — so there is nothing to protect, and
+ * relying on a build-time environment variable proved fragile: the first
+ * production deploy silently rendered no form because the Pages build container
+ * didn't see it. A committed default cannot fail that way.
+ *
+ * PUBLIC_TURNSTILE_SITE_KEY still overrides it, so another deployment can point
+ * at a different widget without a code change. The matching *secret* is a Pages
+ * secret and must never appear here.
+ */
+export const TURNSTILE_SITE_KEY: string =
+	import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAER2-SZgdP9MmAij";
+
 export const SITE_DESCRIPTION =
 	"Simon Rook writes practical philosophy for thoughtful people who overthink. " +
 	"Author of The Stoic Mind for Overthinkers.";
