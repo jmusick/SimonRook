@@ -1,3 +1,7 @@
-name = "simon-rook"
+# Must match the Cloudflare Pages project name exactly — the dashboard project
+# is "simonrook". A mismatch breaks Git-integrated builds (Build system v3 reads
+# this file) and makes `wrangler pages secret put` target a project that isn't
+# there.
+name = "simonrook"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-08-16"

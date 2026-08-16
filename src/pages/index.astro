@@ -2,7 +2,13 @@
 import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "../config/site";
+import {
+	PROFILE_URLS,
+	SITE_DESCRIPTION,
+	SITE_NAME,
+	SITE_TAGLINE,
+	SITE_URL,
+} from "../config/site";
 import { FEATURED_BOOK, formatPublished, primaryRetailer } from "../data/books";
 
 const book = FEATURED_BOOK;
@@ -17,6 +23,8 @@ const structuredData = {
 	url: canonicalUrl,
 	jobTitle: "Author",
 	description: SITE_DESCRIPTION,
+	// Only emitted once at least one profile URL is filled in in site.ts.
+	...(PROFILE_URLS.length > 0 && { sameAs: PROFILE_URLS }),
 };
 ---
 

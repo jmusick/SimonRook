@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { ACTIVE_SOCIALS, SITE_NAME, SITE_VERSION } from "../config/site";
+import { ACTIVE_SOCIALS, GA_MEASUREMENT_ID, SITE_NAME, SITE_VERSION } from "../config/site";
 
 const year = new Date().getFullYear();
 ---
@@ -30,5 +30,14 @@ const year = new Date().getFullYear();
 		<span>v{SITE_VERSION}</span>
 		<span aria-hidden="true">·</span>
 		<a href="/privacy-policy/">Privacy Policy</a>
+		{GA_MEASUREMENT_ID && (
+			<>
+				<span aria-hidden="true">·</span>
+				{/* Reopens the consent banner — see src/components/CookieConsent.astro. */}
+				<button type="button" class="footer-link-button" data-cookie-preferences>
+					Cookie choices
+				</button>
+			</>
+		)}
 	</span>
 </footer>

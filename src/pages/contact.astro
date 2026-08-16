@@ -5,6 +5,32 @@ import { ACTIVE_SOCIALS, CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/si
 
 const canonicalUrl = `${SITE_URL}/contact/`;
 const description = `Contact ${SITE_NAME} — reader mail, press, and rights enquiries.`;
+
+/**
+ * Turnstile's site key is public, but it's read from the environment rather than
+ * committed so the key can differ per deployment. Without it there is no spam
+ * protection, so a *production* build withholds the form entirely and falls back
+ * to the plain address — the same "hide it rather than half-render it" approach
+ * the social links take. Set PUBLIC_TURNSTILE_SITE_KEY in the Pages project's
+ * build variables to switch it on.
+ *
+ * `astro dev` *always* uses Cloudflare's documented always-passes test key, even
+ * if a real key is present in .env. The real widget is registered against the
+ * production hostnames, so it renders an "invalid domain" error on localhost —
+ * pinning dev to the test key means the form is always visible while working on
+ * the page, and a production key can never be exercised locally by accident.
+ * The test key is gated on DEV, so it can never reach a built site.
+ */
+const TURNSTILE_DEV_TEST_KEY = "1x00000000000000000000AA";
+const turnstileSiteKey = import.meta.env.DEV
+	? TURNSTILE_DEV_TEST_KEY
+	: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+/**
+ * `astro dev` serves pages but not Pages Functions, so /api/contact 404s here.
+ * Say so on the page rather than letting the form look broken.
+ */
+const functionUnavailable = import.meta.env.DEV;
 ---
 
 <Layout
@@ -21,11 +47,7 @@ const description = `Contact ${SITE_NAME} — reader mail, press, and rights enq
 		<div class="prose" style="margin-top: var(--space-6);">
 			<p class="lede">
 				Reader mail, press enquiries, translation and rights questions all reach the same
-				inbox. It's read by a person, though not always quickly.
-			</p>
-
-			<p class="panel" style="font-size: var(--text-body-lg);">
-				<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+				inbox. Use the form below. It's read by a person, though not always quickly.
 			</p>
 
 			<p>
@@ -33,6 +55,74 @@ const description = `Contact ${SITE_NAME} — reader mail, press, and rights enq
 				you've found an error — a misattributed quotation, a broken citation, a translation
 				that doesn't hold up — please say so plainly. Corrections are welcome and get made.
 			</p>
+
+			{/*
+				The published address is deliberately not shown — everything goes through
+				the form. The one exception is a build with no Turnstile key, where the
+				form can't render at all; without this fallback the page would offer no
+				way to make contact whatsoever.
+			*/}
+			{!turnstileSiteKey && (
+				<p class="panel" style="font-size: var(--text-body-lg);">
+					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+				</p>
+			)}
+
+			{turnstileSiteKey && (
+				<>
+					<form class="contact-form panel" id="contact-form" novalidate>
+						<div class="field">
+							<label for="cf-name">Name</label>
+							<input id="cf-name" name="name" type="text" maxlength="100" required autocomplete="name" />
+						</div>
+
+						<div class="field">
+							<label for="cf-email">Email</label>
+							<input id="cf-email" name="email" type="email" required autocomplete="email" />
+							<span class="field-hint">So a reply can reach you. Nothing else is done with it.</span>
+						</div>
+
+						<div class="field">
+							<label for="cf-subject">Subject <span class="optional">optional</span></label>
+							<input id="cf-subject" name="subject" type="text" maxlength="150" />
+						</div>
+
+						<div class="field">
+							<label for="cf-message">Message</label>
+							<textarea id="cf-message" name="message" rows="8" minlength="10" maxlength="4000" required
+							></textarea>
+						</div>
+
+						{/* Honeypot: off-screen and hidden from assistive tech, so only a bot fills it. */}
+						<div class="honeypot" aria-hidden="true">
+							<label for="cf-website">Leave this field empty</label>
+							<input id="cf-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+						</div>
+
+						<div
+							class="cf-turnstile"
+							data-sitekey={turnstileSiteKey}
+							data-theme="dark"
+							data-appearance="interaction-only"
+						>
+						</div>
+
+						<div class="form-actions">
+							<button type="submit" class="btn btn-primary" id="cf-submit">Send message</button>
+							<p class="form-status" id="cf-status" role="status" aria-live="polite"></p>
+						</div>
+
+						{functionUnavailable && (
+							<p class="dev-note">
+								<strong>Dev server only:</strong> this is Turnstile's test key, and
+								<code>astro dev</code> doesn't serve <code>/api/contact</code>, so sending
+								will fail here. Use <code>npm run build</code> then
+								<code>npx wrangler pages dev dist</code> to exercise the real endpoint.
+							</p>
+						)}
+					</form>
+				</>
+			)}
 
 			<h2>One thing this inbox can't do</h2>
 
@@ -64,4 +154,199 @@ const description = `Contact ${SITE_NAME} — reader mail, press, and rights enq
 			</section>
 		)}
 	</div>
+
+	{turnstileSiteKey && (
+		<script
+			slot="head"
+			is:inline
+			src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+			async
+			defer></script>
+	)}
 </Layout>
+
+{turnstileSiteKey && (
+	<script>
+		const form = document.getElementById("contact-form") as HTMLFormElement | null;
+		const status = document.getElementById("cf-status");
+		const submit = document.getElementById("cf-submit") as HTMLButtonElement | null;
+
+		if (form && status && submit) {
+			const setStatus = (text: string, state: "" | "ok" | "error") => {
+				status.textContent = text;
+				status.dataset.state = state;
+			};
+
+			form.addEventListener("submit", async (event) => {
+				event.preventDefault();
+
+				if (!form.checkValidity()) {
+					form.reportValidity();
+					return;
+				}
+
+				const data = new FormData(form);
+				// Turnstile injects this hidden input into the form once solved.
+				const captchaToken = String(data.get("cf-turnstile-response") ?? "");
+				if (!captchaToken) {
+					setStatus("Please wait a moment for the verification check, then try again.", "error");
+					return;
+				}
+
+				submit.disabled = true;
+				setStatus("Sending…", "");
+
+				try {
+					const response = await fetch("/api/contact", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							name: data.get("name"),
+							email: data.get("email"),
+							subject: data.get("subject"),
+							message: data.get("message"),
+							website: data.get("website"),
+							captchaToken,
+						}),
+					});
+
+					const result = (await response.json().catch(() => null)) as
+						| { message?: string; error?: string }
+						| null;
+
+					if (!response.ok) {
+						setStatus(result?.error ?? "Something went wrong. Please try again.", "error");
+						// A token is single-use — without a reset the next attempt fails too.
+						window.turnstile?.reset();
+						submit.disabled = false;
+						return;
+					}
+
+					form.reset();
+					window.turnstile?.reset();
+					setStatus(result?.message ?? "Thanks — your message has been sent.", "ok");
+					submit.disabled = false;
+				} catch {
+					setStatus("Could not reach the server. Please try again in a moment.", "error");
+					window.turnstile?.reset();
+					submit.disabled = false;
+				}
+			});
+		}
+	</script>
+)}
+
+<style>
+	.contact-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-5);
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.field label {
+		font-family: var(--font-ui);
+		font-size: var(--text-body-sm);
+		font-weight: 500;
+		color: var(--text-primary);
+	}
+
+	.field .optional {
+		color: var(--text-tertiary);
+		font-weight: 400;
+		font-size: var(--text-micro);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		margin-left: var(--space-2);
+	}
+
+	.field-hint {
+		font-family: var(--font-ui);
+		font-size: var(--text-micro);
+		color: var(--text-tertiary);
+	}
+
+	.field input,
+	.field textarea {
+		font-family: var(--font-body);
+		font-size: var(--text-body);
+		color: var(--text-primary);
+		background: var(--night-2);
+		border: 1px solid var(--border-hairline);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		width: 100%;
+		transition: border-color var(--duration-base) var(--ease-out);
+	}
+
+	.field textarea {
+		resize: vertical;
+		min-height: 160px;
+		line-height: 1.6;
+	}
+
+	.field input:focus-visible,
+	.field textarea:focus-visible {
+		outline: none;
+		border-color: var(--bronze);
+	}
+
+	/* Kept in the layout but out of sight and out of the a11y tree — a sighted
+	   or screen-reader user should never encounter it, only a form-filling bot. */
+	.honeypot {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* Dev-server affordance — never rendered in a built site. */
+	.dev-note {
+		font-family: var(--font-ui);
+		font-size: var(--text-micro);
+		line-height: 1.6;
+		color: var(--text-tertiary);
+		border-left: 2px solid var(--bronze-dim);
+		padding-left: var(--space-3);
+		margin: 0;
+	}
+
+	.dev-note code {
+		font-size: 11px;
+		color: var(--text-secondary);
+	}
+
+	.form-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.form-status {
+		font-family: var(--font-ui);
+		font-size: var(--text-body-sm);
+		color: var(--text-secondary);
+		margin: 0;
+	}
+
+	.form-status[data-state="ok"] {
+		color: var(--bronze-bright);
+	}
+
+	.form-status[data-state="error"] {
+		color: #e2a0a0;
+	}
+
+	button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+</style>

@@ -1,12 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site";
+import { SITE_NAME, SITE_URL } from "../config/site";
 
 const canonicalUrl = `${SITE_URL}/privacy-policy/`;
 
 /**
- * Bump this whenever the substance of the policy changes — particularly if
- * analytics, an email signup, or affiliate links are ever added.
+ * Bump this whenever the substance of the policy changes — particularly if an
+ * email signup, affiliate links, or any further third-party script is added.
+ *
+ * What this page must keep describing accurately, as of this date: Google
+ * Analytics 4, the contact form, Cloudflare Turnstile, Cloudflare Email Sending,
+ * Cloudflare Pages hosting, and Google Fonts.
  */
 const lastUpdated = "August 16, 2026";
 ---
@@ -28,14 +32,68 @@ const lastUpdated = "August 16, 2026";
 		<div class="prose" style="margin-top: var(--space-6);">
 			<p class="lede">
 				This is a static website. It has no accounts, no comment system, no advertising,
-				no analytics, and no mailing list. Nothing you do here is tracked across sites.
+				and no mailing list. It has one contact form, and it uses Google Analytics only
+				if you agree to it. Both are described below.
 			</p>
 
 			<h2>What this site collects</h2>
 
 			<p>
-				Nothing directly. There are no forms, no cookies set by this site, and no scripts
-				that record what you read or where you go next.
+				Only what you type into the contact form, and only when you choose to send it.
+				There is no account system, nothing that records what you read, and no data
+				gathered for advertising or sale.
+			</p>
+
+			<h2>Analytics</h2>
+
+			<p>
+				This site can use Google Analytics 4 to count visits and see which pages are
+				read — but only if you agree. On your first visit a banner asks. Until you
+				accept, the Google tag is never loaded: no analytics cookies are set, and no
+				request is made to Google at all, so nothing about your visit reaches them.
+				Declining is a single click, and the site works exactly the same either way.
+			</p>
+
+			<p>
+				If you do accept, the tag sets cookies and reports information about your visit
+				— pages viewed, approximate location derived from your IP address, browser,
+				device type, and referring site — to Google, which processes it under its own
+				privacy terms. It is used to understand what people read, not to identify
+				individuals, and the data is not sold or combined with anything else collected
+				here.
+			</p>
+
+			<p>
+				Your answer is remembered in your browser's local storage, not in a cookie. You
+				can change it at any time with the <button
+					type="button"
+					class="inline-link-button"
+					data-cookie-preferences>Cookie choices</button
+				> link in the footer of any page; withdrawing consent deletes the analytics cookies
+				and reloads the page. Browser "do not track" settings, ad and tracker blockers, and
+				Google's <a
+					href="https://tools.google.com/dlpage/gaoptout"
+					target="_blank"
+					rel="noopener noreferrer">opt-out add-on</a
+				> all work as well.
+			</p>
+
+			<h2>The contact form</h2>
+
+			<p>
+				The contact form on the <a href="/contact/">contact page</a> asks for your name,
+				email address, and message. When you send it, those are delivered by email to the
+				site's own inbox and are kept only for as long as needed to correspond with you.
+				They are not added to a mailing list, sold, or shared, and they aren't stored in
+				a database — there isn't one.
+			</p>
+
+			<p>
+				The form is protected by Cloudflare Turnstile, which checks that a submission
+				comes from a person rather than a bot. Turnstile receives your IP address and
+				some technical signals about your browser to make that assessment. Cloudflare
+				states that it does not use this for cross-site tracking or advertising. Mail is
+				then sent through Cloudflare's email service.
 			</p>
 
 			<h2>What the host records</h2>
@@ -59,17 +117,22 @@ const lastUpdated = "August 16, 2026";
 			<h2>Links to other sites</h2>
 
 			<p>
-				Links to booksellers such as Amazon take you to services with their own privacy
-				practices, which govern once you leave this site. These are plain links: no
-				affiliate tracking, referral codes, or commissions are attached to them.
+				Links to booksellers such as Amazon, and to social profiles such as X and
+				Facebook, take you to services with their own privacy practices, which govern
+				once you leave this site. These are plain links: no affiliate tracking, referral
+				codes, or commissions are attached to them, and no widgets, embeds, or tracking
+				scripts from those retailers or social networks run on this site.
 			</p>
 
-			<h2>Email</h2>
+			<h2>Where this data goes</h2>
 
 			<p>
-				If you write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>, your
-				message and address are kept only for as long as needed to correspond with you.
-				They are not added to a mailing list, sold, or shared.
+				Nothing collected here is sold, rented, or shared for advertising. The only
+				third parties involved are the ones named above — Google, for analytics and
+				fonts, and Cloudflare, for hosting, spam checking, and delivering form mail —
+				each acting under its own privacy terms. Analytics data is retained by Google
+				according to the property's settings; contact-form mail is kept in an ordinary
+				email inbox for as long as the correspondence is useful, then deleted.
 			</p>
 
 			<h2>Children</h2>
@@ -88,8 +151,8 @@ const lastUpdated = "August 16, 2026";
 			<h2>Contact</h2>
 
 			<p>
-				Questions about this policy can go to
-				<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+				Questions about this policy can go through the
+				<a href="/contact/">contact form</a>.
 			</p>
 		</div>
 	</div>

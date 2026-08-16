@@ -1,7 +1,8 @@
 ---
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import { SITE_NAME, SITE_URL } from "../config/site";
+import CookieConsent from "../components/CookieConsent.astro";
+import { ANALYTICS_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from "../config/site";
 
 interface Props {
 	title: string;
@@ -24,6 +25,13 @@ const {
 	structuredData,
 	active,
 } = Astro.props;
+
+/**
+ * The banner renders wherever analytics is configured at all, so it stays
+ * workable in dev; ANALYTICS_ID is what decides whether accepting actually
+ * loads anything, and that is production-only.
+ */
+const showConsentBanner = GA_MEASUREMENT_ID !== null;
 ---
 
 <html lang="en">
@@ -68,5 +76,6 @@ const {
 			<slot />
 		</main>
 		<SiteFooter />
+		{showConsentBanner && <CookieConsent measurementId={ANALYTICS_ID} />}
 	</body>
 </html>

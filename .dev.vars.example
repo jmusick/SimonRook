@@ -1,0 +1,23 @@
+# Copy this file to .dev.vars for local Pages Functions development
+# (`npx wrangler pages dev dist`). Do not commit .dev.vars — it is gitignored.
+#
+# The same names must be set as encrypted variables in the Cloudflare dashboard
+# under Workers & Pages -> the Pages project -> Settings -> Variables, or via
+# `npx wrangler pages secret put <NAME>`.
+
+# Cloudflare Email Sending. The token needs the "Email Sending: Edit"
+# permission, scoped to this account. Account ID is visible in the dashboard URL.
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
+
+# Outgoing sender for contact-form mail. Must be an address on a sending domain
+# that is connected and verified in Email Sending, or the send is rejected.
+EMAIL_FROM_CONTACT=contact@simonrook.com
+
+# Inbox the contact form delivers to. Must be a mailbox that actually receives
+# (Email Routing can forward it elsewhere).
+CONTACT_TO_EMAIL=hello@simonrook.com
+
+# Cloudflare Turnstile. The secret is server-side only; the matching site key is
+# public and belongs in src/config/site.ts, not here.
+TURNSTILE_SECRET_KEY=
