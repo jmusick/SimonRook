@@ -28,14 +28,18 @@ automatic deployments from `main`, so **pushing to `main` deploys**. There is no
 manual step, and `npx wrangler pages deploy dist` is only a fallback for
 publishing a local build.
 
-Production configuration lives in the Pages dashboard under Settings →
-Variables, not in this repo:
+Production configuration is split between committed plaintext configuration and
+dashboard secrets:
 
-| Type | Name |
-| --- | --- |
-| Text | `CLOUDFLARE_ACCOUNT_ID` |
-| Secret | `CLOUDFLARE_API_TOKEN` — Email Sending: Edit scope |
-| Secret | `TURNSTILE_SECRET_KEY` |
+| Location | Type | Name |
+| --- | --- | --- |
+| `wrangler.toml` `[vars]` | Text | `CLOUDFLARE_ACCOUNT_ID` |
+| Pages dashboard | Secret | `CLOUDFLARE_API_TOKEN` — Email Sending: Edit scope |
+| Pages dashboard | Secret | `TURNSTILE_SECRET_KEY` |
+
+With this project's `wrangler.toml`, Cloudflare ignores dashboard plaintext
+variables while still applying dashboard secrets. Do not move the account ID
+back to the dashboard or put either secret in the committed file.
 
 The Turnstile *site* key is committed in
 [src/config/site.ts](src/config/site.ts) rather than set here — it is public and
@@ -127,14 +131,15 @@ Live and verified:
   Email Sending sender. Neither address is published on the site — the contact
   form is the only route, and the address surfaces only as a fallback when no
   Turnstile key is configured.
-- Turnstile widget `simonrook-contact-form`, and all four production variables,
-  are set in the Pages dashboard.
+- Turnstile widget `simonrook-contact-form` is live. The account ID is committed
+  in `wrangler.toml`; the API token and Turnstile secret are Pages secrets. The
+  sender and destination use the verified defaults compiled into the Function.
 - Google Analytics 4 (`GA_MEASUREMENT_ID` in
   [src/config/site.ts](src/config/site.ts)) is live in production builds only,
   and behind an opt-in consent banner — the tag isn't fetched until a visitor
   accepts.
 
-**PLACEHOLDER — needs a real value before launch:**
+**Remaining optional profiles and replaceable assets:**
 
 - `SOCIALS` in [src/config/site.ts](src/config/site.ts): X, Facebook, Instagram,
   and TikTok are live. The Amazon entry points at the featured book, not an

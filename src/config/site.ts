@@ -133,8 +133,8 @@ export const PROFILE_URLS = ACTIVE_SOCIALS.filter((s) => s.isProfile !== false).
  * rendered (no Turnstile key configured). Keep it in step with CONTACT_TO_EMAIL
  * in the Function's environment — that's what actually addresses the mail.
  *
- * PLACEHOLDER: set up this mailbox (or an alias/forwarder) on the simonrook.com
- * domain before launch. It must be an address on this domain — don't substitute
- * one from elsewhere. See the vault notes referenced in AGENTS.md.
+ * This mailbox is live. Keep it on the simonrook.com domain — don't substitute
+ * a personal address, which would break the author-identity separation recorded
+ * in the private vault. See the vault notes referenced in AGENTS.md.
  */
 export const CONTACT_EMAIL = "hello@simonrook.com";
