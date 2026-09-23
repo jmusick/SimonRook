@@ -56,9 +56,10 @@ say so rather than fabricating.
 - `src/pages/` — routes. `index.astro`, `books/index.astro`,
   `books/[slug].astro` (one page per book via `getStaticPaths`), `about.astro`,
   `contact.astro`, `privacy-policy.astro`, `404.astro`.
-- `src/components/` — `SiteHeader.astro`, `SiteFooter.astro`, `BookCard.astro`.
-- `src/layouts/Layout.astro` — shared page shell (meta, OG, JSON-LD slot, the
-  Google tag).
+- `src/components/` — `SiteHeader.astro`, `SiteFooter.astro`, `BookCard.astro`,
+  `CookieConsent.astro` (the consent banner, and the only loader of the Google tag).
+- `src/layouts/Layout.astro` — shared page shell (meta, OG, JSON-LD slot).
+- `public/_headers` — Cloudflare Pages response headers (CSP etc.). See below.
 - `src/config/site.ts` — single source of truth for site URL, name, tagline,
   `GA_MEASUREMENT_ID`, the delivery inbox, and `SOCIALS`. Entries with
   `href: null` are auto-hidden by the header/footer/Contact page — don't
@@ -101,11 +102,8 @@ npm run preview   # serve the built output
 No test suite or linter is configured. Verify changes with `npm run build`
 and, for anything visual, `npm run dev` + a browser check.
 
-In VS Code, Run & Debug → "Launch Astro dev in Firefox" starts the dev server
-task and attaches the Firefox debugger. The launch URL is hardcoded to port
-4321, which is why `astro.config.mjs` sets `vite.server.strictPort` — don't
-remove it without also making the launch URL flexible, or a busy port will
-silently start the server on 4322 and the debugger will attach to nothing.
+`astro.config.mjs` sets `vite.server.strictPort` because the VS Code Firefox
+launch config is hardcoded to port 4321 — don't remove it (see README).
 
 ## Contact form and email
 
@@ -141,33 +139,37 @@ latter, the names of the missing variables — visitors see only the generic
 message, but the cause is diagnosable with one `curl`.
 
 **Because this project has a `wrangler.toml`, Cloudflare ignores plaintext
-variables set in the Pages dashboard.** Secrets set there still apply. That
-asymmetry cost two deploys: `CLOUDFLARE_ACCOUNT_ID` was set as dashboard Text
-and silently never reached the Function. Plaintext vars belong in
-`wrangler.toml`'s `[vars]`; secrets belong in the dashboard or
-`wrangler pages secret put`. Never put a secret in `[vars]` — that file is
-committed.
+variables set in the Pages dashboard** (secrets there still apply) — a dashboard
+Text `CLOUDFLARE_ACCOUNT_ID` once silently never reached the Function. Plaintext
+vars go in `wrangler.toml` `[vars]`; secrets go in the dashboard or
+`wrangler pages secret put`, never in the committed `[vars]`.
 
-The Turnstile **site key is committed** in `src/config/site.ts` as
-`TURNSTILE_SITE_KEY`, not supplied by the environment. It's public — it ships in
-the HTML — and depending on a build variable proved fragile: the first
-production deploy rendered no form at all because the Pages build container
-never saw `PUBLIC_TURNSTILE_SITE_KEY`. The env var still overrides the committed
-default, but nothing breaks when it's absent. Don't revert this to
-environment-only; the failure is silent and looks like a code bug.
+The Turnstile **site key is committed** as `TURNSTILE_SITE_KEY` in
+`src/config/site.ts`. It's public, and the env-only version shipped a form-less
+Contact page when the build container never saw `PUBLIC_TURNSTILE_SITE_KEY`.
+The env var still overrides it. Don't revert to env-only — that failure is silent.
 
-`astro dev` always uses Cloudflare's always-passes Turnstile **test** key, even
-if a real one is in `.env` — the real widget is registered to the production
-hostnames and errors on `localhost`. So the form is always visible in dev, and a
-production key can't be exercised locally by accident. `astro dev` doesn't serve
-Functions either, so submissions 404 there; test the real endpoint with
-`npm run build && npx wrangler pages dev dist`.
+`astro dev` always uses Cloudflare's always-passes Turnstile **test** key (the
+real widget errors on `localhost`), and doesn't serve Functions, so submissions
+404 there. Test the real endpoint with `npm run build && npx wrangler pages dev dist`.
 
 Other defenses on the endpoint, in case they look redundant: a honeypot field
 (bots fill it; the handler returns 200 and discards, so they learn nothing),
 length/format validation, CRLF stripping on anything reaching a header, and no
 CORS headers at all — one form, one origin. There is deliberately no rate
 limiting; add a WAF rule on `/api/contact` if abuse shows up.
+
+## Security headers
+
+`public/_headers` sets CSP, HSTS, `X-Frame-Options`, `Referrer-Policy` and
+`Permissions-Policy` site-wide. Only Pages (or `wrangler pages dev dist`)
+applies it — `astro dev`/`preview` don't. The CSP allows exactly Google Fonts,
+`challenges.cloudflare.com` (Turnstile), and GA (`www.googletagmanager.com`,
+`*.google-analytics.com`, `*.analytics.google.com`); a new third-party origin
+must be added in the same change or it's silently blocked. GA is the trap: it
+loads only after Accept, so test by accepting the banner and watching the
+console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
+`style=""` attributes.
 
 ## Conventions
 
@@ -202,6 +204,7 @@ limiting; add a WAF rule on `/api/contact` if abuse shows up.
   used.
 - The privacy policy describes actual behavior. Adding a newsletter, embeds, or
   further third-party scripts means updating `src/pages/privacy-policy.astro`
-  and its `lastUpdated` date in the same change. It currently documents Google
+  and its `lastUpdated` date — and the CSP in `public/_headers` — in the same
+  change. It currently documents Google
   Analytics, the contact form, Turnstile, Cloudflare hosting, and Google Fonts
   — keep that list true.

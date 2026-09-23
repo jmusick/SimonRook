@@ -12,11 +12,11 @@ CLOUDFLARE_ACCOUNT_ID=
 
 # Outgoing sender for contact-form mail. Must be an address on a sending domain
 # that is connected and verified in Email Sending, or the send is rejected.
-EMAIL_FROM_CONTACT=contact@simonrook.com
+EMAIL_FROM_CONTACT=contact@example.com
 
 # Inbox the contact form delivers to. Must be a mailbox that actually receives
 # (Email Routing can forward it elsewhere).
-CONTACT_TO_EMAIL=hello@simonrook.com
+CONTACT_TO_EMAIL=you@example.com
 
 # Cloudflare Turnstile. The secret is server-side only; the matching site key is
 # public and belongs in src/config/site.ts, not here.

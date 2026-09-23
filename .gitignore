@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # wrangler
 .wrangler/
+
+# Local working checklist (audit findings) — not a deliverable
+TODO.md

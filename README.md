@@ -51,6 +51,26 @@ if a deployment needs a different widget.
 into the Function already match the live addresses. Preview deployments keep a
 separate set of variables — they need their own copies to run the form.
 
+## Security headers
+
+[public/_headers](public/_headers) gives every route a Content-Security-Policy,
+HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+`Cross-Origin-Opener-Policy` and `Permissions-Policy`, and long-caches
+`/_astro/*`. Pages applies it on deploy; `astro dev` and `astro preview` don't,
+so use `wrangler pages dev dist` to see it locally.
+
+The CSP allows only Google Fonts, Cloudflare Turnstile and Google Analytics.
+Adding a new third-party script, font, or embed means adding its origin there
+too. After a deploy that touches the policy:
+
+```bash
+curl -I https://simonrook.com/
+```
+
+Then accept the cookie banner and check the console for CSP violations —
+the analytics tag only loads after consent, so that's the one path a
+too-tight policy breaks without anyone noticing.
+
 ## Debugging in VS Code
 
 Run & Debug → **Launch Astro dev in Firefox**. The `dev server` task in
