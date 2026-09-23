@@ -164,9 +164,13 @@ limiting; add a WAF rule on `/api/contact` if abuse shows up.
 `public/_headers` sets CSP, HSTS, `X-Frame-Options`, `Referrer-Policy` and
 `Permissions-Policy` site-wide. Only Pages (or `wrangler pages dev dist`)
 applies it — `astro dev`/`preview` don't. The CSP allows exactly Google Fonts,
-`challenges.cloudflare.com` (Turnstile), and GA (`www.googletagmanager.com`,
-`*.google-analytics.com`, `*.analytics.google.com`); a new third-party origin
-must be added in the same change or it's silently blocked. GA is the trap: it
+`challenges.cloudflare.com` (Turnstile), Cloudflare Web Analytics
+(`static.cloudflareinsights.com`, `cloudflareinsights.com`), and GA
+(`www.googletagmanager.com`, `*.google-analytics.com`, `*.analytics.google.com`);
+a new third-party origin must be added in the same change or it's silently blocked.
+Cloudflare Web Analytics is injected at the edge by a `simonrook.com` zone
+setting — it's not in the source and doesn't appear on `*.pages.dev` — and it's
+cookieless, so it deliberately runs outside the consent banner. GA is the trap: it
 loads only after Accept, so test by accepting the banner and watching the
 console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
 `style=""` attributes.
@@ -205,6 +209,6 @@ console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
 - The privacy policy describes actual behavior. Adding a newsletter, embeds, or
   further third-party scripts means updating `src/pages/privacy-policy.astro`
   and its `lastUpdated` date — and the CSP in `public/_headers` — in the same
-  change. It currently documents Google
-  Analytics, the contact form, Turnstile, Cloudflare hosting, and Google Fonts
-  — keep that list true.
+  change. It currently documents Google Analytics, Cloudflare Web Analytics, the
+  contact form, Turnstile, Cloudflare hosting, and Google Fonts — keep that
+  list true.

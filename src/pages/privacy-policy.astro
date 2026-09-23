@@ -9,8 +9,8 @@ const canonicalUrl = `${SITE_URL}/privacy-policy/`;
  * email signup, affiliate links, or any further third-party script is added.
  *
  * What this page must keep describing accurately, as of this date: Google
- * Analytics 4, the contact form, Cloudflare Turnstile, Cloudflare Email Sending,
- * Cloudflare Pages hosting, and Google Fonts.
+ * Analytics 4, Cloudflare Web Analytics, the contact form, Cloudflare Turnstile,
+ * Cloudflare Email Sending, Cloudflare Pages hosting, and Google Fonts.
  */
 const lastUpdated = "September 23, 2026";
 ---
@@ -32,22 +32,34 @@ const lastUpdated = "September 23, 2026";
 		<div class="prose" style="margin-top: var(--space-6);">
 			<p class="lede">
 				This is a static website. It has no accounts, no comment system, no advertising,
-				and no mailing list. It has one contact form, and it uses Google Analytics only
-				if you agree to it. Both are described below.
+				and no mailing list. It has one contact form, it counts visits with Cloudflare's
+				cookieless analytics, and it uses Google Analytics only if you agree to it. All
+				three are described below.
 			</p>
 
 			<h2>What this site collects</h2>
 
 			<p>
-				Only what you type into the contact form, and only when you choose to send it.
-				There is no account system, nothing that records what you read, and no data
-				gathered for advertising or sale.
+				Personally, only what you type into the contact form, and only when you choose to
+				send it. Beyond that, the site keeps anonymous visit statistics, described under
+				Analytics below. There is no account system, no reading history tied to you, and
+				no data gathered for advertising or sale.
 			</p>
 
 			<h2>Analytics</h2>
 
 			<p>
-				This site can use Google Analytics 4 to count visits and see which pages are
+				Every visit is counted by Cloudflare Web Analytics, a privacy-focused service
+				from the company that hosts this site. It sets no cookies, stores nothing in your
+				browser, and doesn't fingerprint or track you across sites. It records which page
+				was viewed, the referring site, your browser and device type, the country derived
+				from your IP address, and how quickly the page loaded, and it reports these only
+				as aggregate statistics. It runs whether or not you accept the banner below,
+				because it doesn't identify you.
+			</p>
+
+			<p>
+				Beyond that, this site can use Google Analytics 4 to count visits and see which pages are
 				read — but only if you agree. On your first visit a banner asks. Until you
 				accept, the Google tag is never loaded: no analytics cookies are set, and no
 				request is made to Google at all, so nothing about your visit reaches them.
@@ -130,7 +142,8 @@ const lastUpdated = "September 23, 2026";
 			<p>
 				Nothing collected here is sold, rented, or shared for advertising. The only
 				third parties involved are the ones named above — Google, for analytics and
-				fonts, and Cloudflare, for hosting, spam checking, and delivering form mail —
+				fonts, and Cloudflare, for hosting, visit statistics, spam checking, and
+				delivering form mail —
 				each acting under its own privacy terms. Analytics data is retained by Google
 				according to the property's settings; contact-form mail is kept in an ordinary
 				email inbox for as long as the correspondence is useful, then deleted.

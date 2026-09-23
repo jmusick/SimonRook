@@ -59,7 +59,11 @@ HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
 `/_astro/*`. Pages applies it on deploy; `astro dev` and `astro preview` don't,
 so use `wrangler pages dev dist` to see it locally.
 
-The CSP allows only Google Fonts, Cloudflare Turnstile and Google Analytics.
+The CSP allows only Google Fonts, Cloudflare Turnstile, Cloudflare Web
+Analytics and Google Analytics. Cloudflare Web Analytics isn't in the source:
+a `simonrook.com` zone setting injects its beacon at the edge, so it doesn't
+appear on `*.pages.dev` previews. It's cookieless and runs without consent;
+GA stays opt-in.
 Adding a new third-party script, font, or embed means adding its origin there
 too. After a deploy that touches the policy:
 
@@ -158,6 +162,9 @@ Live and verified:
   [src/config/site.ts](src/config/site.ts)) is live in production builds only,
   and behind an opt-in consent banner — the tag isn't fetched until a visitor
   accepts.
+- Cloudflare Web Analytics (cookieless, no consent needed) is enabled on the
+  `simonrook.com` zone and counts every visit. It's configured in the dashboard,
+  not in this repo.
 
 **Remaining optional profiles and replaceable assets:**
 
