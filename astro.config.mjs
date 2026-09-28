@@ -2,6 +2,41 @@
 import { defineConfig } from 'astro/config';
 import icon from 'astro-icon';
 import sitemap from '@astrojs/sitemap';
+import { execFileSync } from 'node:child_process';
+
+/**
+ * Sitemap `lastmod` from git: the newest commit touching a page's source files.
+ * A shallow clone would stamp every page with the same latest commit, which is
+ * worse than no date, so lastmod is left out entirely in that case (and if git
+ * isn't available at all).
+ */
+function git(...args) {
+	try {
+		return execFileSync('git', args, { encoding: 'utf8' }).trim();
+	} catch {
+		return '';
+	}
+}
+const canDateFromGit = git('rev-parse', '--is-shallow-repository') === 'false';
+function lastCommitDate(...files) {
+	const iso = git('log', '-1', '--format=%cI', '--', ...files);
+	return iso ? new Date(iso).toISOString() : undefined;
+}
+
+// Pathname → the source files its content comes from. Unlisted pages get no lastmod.
+const BOOK_DATA = 'src/data/books.ts';
+const PAGE_SOURCES = {
+	'/': ['src/pages/index.astro', BOOK_DATA],
+	'/about/': ['src/pages/about.astro'],
+	'/books/': ['src/pages/books/index.astro', BOOK_DATA],
+	'/contact/': ['src/pages/contact.astro'],
+	'/privacy-policy/': ['src/pages/privacy-policy.astro'],
+};
+function sourcesFor(pathname) {
+	if (PAGE_SOURCES[pathname]) return PAGE_SOURCES[pathname];
+	if (pathname.startsWith('/books/')) return ['src/pages/books/[slug].astro', BOOK_DATA];
+	return undefined;
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -18,5 +53,14 @@ export default defineConfig({
 		// Vite option; it has no effect under Astro's own `server` block.
 		server: { strictPort: true },
 	},
-	integrations: [icon(), sitemap()],
+	integrations: [
+		icon(),
+		sitemap({
+			serialize(item) {
+				const files = canDateFromGit ? sourcesFor(new URL(item.url).pathname) : undefined;
+				const lastmod = files && lastCommitDate(...files);
+				return lastmod ? { ...item, lastmod } : item;
+			},
+		}),
+	],
 });
