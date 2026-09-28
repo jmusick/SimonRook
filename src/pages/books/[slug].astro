@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Layout from "../../layouts/Layout.astro";
 import { SITE_NAME, SITE_URL } from "../../config/site";
@@ -16,6 +16,14 @@ interface Props {
 const { book } = Astro.props;
 const canonicalUrl = `${SITE_URL}/books/${book.slug}/`;
 
+// Absolute URLs for the built images: the share card (or the cover, when the
+// book has no card) for Open Graph / Twitter, and the cover for the Book schema.
+const socialImage = await getImage({ src: book.socialImage ?? book.cover, format: "jpg", quality: 85 });
+const socialImageUrl = new URL(socialImage.src, SITE_URL).href;
+const socialImageAlt = book.socialImage ? (book.socialImageAlt ?? book.coverAlt) : book.coverAlt;
+const coverImage = await getImage({ src: book.cover, format: "jpg", quality: 85 });
+const coverImageUrl = new URL(coverImage.src, SITE_URL).href;
+
 // Chapters are numbered continuously across parts, matching the manuscript.
 let chapterNumber = 0;
 
@@ -30,7 +38,7 @@ const structuredData = {
 	datePublished: book.published,
 	inLanguage: "en",
 	url: canonicalUrl,
-	image: `${SITE_URL}/og.png`,
+	image: coverImageUrl,
 	...(book.retailers.length > 0 && {
 		offers: book.retailers.map((r) => ({
 			"@type": "Offer",
@@ -47,7 +55,8 @@ const structuredData = {
 	title={`${book.title} — ${SITE_NAME}`}
 	description={book.blurb}
 	canonicalUrl={canonicalUrl}
-	socialImageAlt={book.coverAlt}
+	socialImageUrl={socialImageUrl}
+	socialImageAlt={socialImageAlt}
 	structuredData={structuredData}
 	active="books"
 >

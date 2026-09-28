@@ -1,5 +1,6 @@
 import type { ImageMetadata } from "astro";
 import stoicMindCover from "../assets/stoic-mind-cover.png";
+import stoicMindSocial from "../assets/stoic-mind-og.png";
 
 /**
  * Book catalogue — the single source of truth for every title.
@@ -41,6 +42,14 @@ export interface Book {
 	promises: string[];
 	cover: ImageMetadata;
 	coverAlt: string;
+	/**
+	 * Landscape share card (1200×630) for the book page's Open Graph / Twitter
+	 * image. Optional: without one the page shares the cover itself, which
+	 * platforms crop to fit their landscape frame.
+	 */
+	socialImage?: ImageMetadata;
+	/** Describes `socialImage`. Falls back to `coverAlt` when there's no card. */
+	socialImageAlt?: string;
 	/** ISO date the edition went on sale. */
 	published: string;
 	format: string;
@@ -84,6 +93,9 @@ export const BOOKS: Book[] = [
 		cover: stoicMindCover,
 		coverAlt:
 			"Cover of The Stoic Mind for Overthinkers by Simon Rook: a marble bust in profile against a deep navy field, with tangled bronze threads behind the head resolving into clean parallel lines.",
+		socialImage: stoicMindSocial,
+		socialImageAlt:
+			"The cover of The Stoic Mind for Overthinkers beside the title and the line: A practical guide to acting without perfect certainty.",
 		published: "2026-08-14",
 		format: "Kindle ebook",
 		asin: "B0HF5K9Q2L",
