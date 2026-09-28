@@ -44,7 +44,8 @@ say so rather than fabricating.
   [public/universal.css](public/universal.css); the palette and type pairing
   are derived from the cover art of *The Stoic Mind for Overthinkers* (deep
   navy, bronze accent, bone text; Oswald display over a Source Serif 4 reading
-  face).
+  face, Inter for UI). Fonts are self-hosted in `public/fonts/` with their OFL
+  licenses — no font CDN.
 - Icons via `astro-icon` + `@iconify-json/simple-icons` / `lucide`.
 - Deploy target: the Cloudflare Pages project **`simonrook`**, connected to
   `jmusick/SimonRook` with automatic deployments from `main`. **Pushing to
@@ -58,21 +59,23 @@ say so rather than fabricating.
   `contact.astro`, `privacy-policy.astro`, `404.astro`.
 - `src/components/` — `SiteHeader.astro`, `SiteFooter.astro`, `BookCard.astro`,
   `CookieConsent.astro` (the consent banner, and the only loader of the Google tag).
-- `src/layouts/Layout.astro` — shared page shell (meta, OG, JSON-LD slot).
+- `src/layouts/Layout.astro` — shared page shell: meta, Open Graph/Twitter
+  (`socialImageUrl`/`Alt`/`Width`/`Height`, `ogType`), a JSON-LD prop, and a
+  `head` slot. See SEO below.
 - `public/_headers` — Cloudflare Pages response headers (CSP etc.). See below.
 - `src/config/site.ts` — single source of truth for site URL, name, tagline,
-  `GA_MEASUREMENT_ID`, the delivery inbox, and `SOCIALS`. Entries with
-  `href: null` are auto-hidden by the header/footer/Contact page — don't
-  special-case missing links elsewhere, just fill in the `href`. `PROFILE_URLS`
-  is the subset valid as schema.org `sameAs`; the Amazon entry sets
-  `isProfile: false` because it points at a book, not the author.
+  `GA_MEASUREMENT_ID`, the delivery inbox, `SOCIALS`, and the shared JSON-LD
+  nodes. `SOCIALS` entries with `href: null` are auto-hidden everywhere — just
+  fill in the `href`. `PROFILE_URLS` is the subset valid as `sameAs` (the
+  Amazon entry is `isProfile: false`: it's a book, not the author); `X_HANDLE`
+  is derived from the X entry.
 - `functions/api/contact.ts` — the only server-side code. See below.
 - `src/env.d.ts` — ambient types for `PUBLIC_*` env vars and `window.turnstile`.
 - `src/data/books.ts` — the book catalogue. Title, subtitle, blurb,
   description, reader promises, cover, publication date, format, ASIN, part and
-  chapter structure, retailer links, and the reader note all live here. Adding a
-  title is a matter of appending a `Book` and dropping its cover in
-  `src/assets/` — no new page files needed.
+  chapter structure, retailer links, and the reader note all live here, plus an
+  optional 1200×630 `socialImage` share card. Adding a title is a matter of
+  appending a `Book` and dropping its cover in `src/assets/` — no new page files.
 
 ## Source of truth for book facts
 
@@ -100,30 +103,24 @@ npm run preview   # serve the built output
 ```
 
 No test suite or linter is configured. Verify changes with `npm run build`
-and, for anything visual, `npm run dev` + a browser check.
-
-`astro.config.mjs` sets `vite.server.strictPort` because the VS Code Firefox
-launch config is hardcoded to port 4321 — don't remove it (see README).
+and, for anything visual, `npm run dev` + a browser check. `astro.config.mjs`
+sets `vite.server.strictPort` because the VS Code Firefox launch config is
+hardcoded to port 4321 — don't remove it (see README).
 
 ## Contact form and email
 
-The one exception to the static-only rule below. `functions/api/contact.ts` is a
-Cloudflare Pages Function backing the Contact page's form; it exists because
-sending mail needs an API token and a token can't ship to a browser. Mail goes
-out through the **Cloudflare Email Sending REST API** (plain `fetch`, no SDK) —
-the same approach as the Tagstash project, whose `AGENTS.md` documents the same
-gotchas.
+The one exception to the static-only rule. `functions/api/contact.ts` is a
+Pages Function backing the Contact form, because sending mail needs an API
+token that can't ship to a browser. Mail goes out through the **Cloudflare
+Email Sending REST API** (plain `fetch`, no SDK):
 
 - `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/email/sending/send`,
   `Authorization: Bearer <token>`, token scoped to `Email Sending: Edit`.
-- Reply-to is the snake_case top-level field **`reply_to`**. `replyTo` 400s with
-  `invalid_request_schema` and a `headers: { 'Reply-To': … }` object 400s with
-  `email.invalid` — don't "correct" the casing. The form's reply-reaches-sender
-  behavior depends on it.
+- Reply-to is the snake_case top-level field **`reply_to`** — `replyTo` and a
+  `headers: { 'Reply-To': … }` object both 400. Don't "correct" the casing.
 - Check `data.success`, not just a 2xx status.
-- The `from` domain must be connected and verified in the dashboard first.
-- `from` stays on the verified domain; the submitter's address goes in
-  `reply_to`. Putting it in `from` gets the domain flagged for spoofing.
+- `from` stays on the verified (dashboard-connected) domain; the submitter's
+  address goes in `reply_to`. Putting it in `from` gets the domain flagged.
 
 Configuration is split across two mechanisms that are easy to confuse:
 
@@ -132,48 +129,52 @@ Configuration is split across two mechanisms that are easy to confuse:
 | `.env` | build time, by Astro | `PUBLIC_TURNSTILE_SITE_KEY` — optional override only | `.env.example` |
 | `.dev.vars` | run time, by the Function | token, account ID, addresses, Turnstile secret | `.dev.vars.example` |
 
-Both are gitignored; the `.example` files are not. Missing Email Sending config
-means the endpoint answers `503` rather than failing silently; the response
-carries a `code` (`turnstile_unconfigured` / `email_unconfigured`) and, for the
-latter, the names of the missing variables — visitors see only the generic
-message, but the cause is diagnosable with one `curl`.
+Both are gitignored; the `.example` files are not. Missing config makes the
+endpoint answer `503` with a `code` (`turnstile_unconfigured` /
+`email_unconfigured`, the latter naming the missing variables) — visitors see
+only a generic message, but one `curl` diagnoses it.
 
-**Because this project has a `wrangler.toml`, Cloudflare ignores plaintext
-variables set in the Pages dashboard** (secrets there still apply) — a dashboard
-Text `CLOUDFLARE_ACCOUNT_ID` once silently never reached the Function. Plaintext
-vars go in `wrangler.toml` `[vars]`; secrets go in the dashboard or
-`wrangler pages secret put`, never in the committed `[vars]`.
-
-The Turnstile **site key is committed** as `TURNSTILE_SITE_KEY` in
-`src/config/site.ts`. It's public, and the env-only version shipped a form-less
-Contact page when the build container never saw `PUBLIC_TURNSTILE_SITE_KEY`.
-The env var still overrides it. Don't revert to env-only — that failure is silent.
-
-`astro dev` always uses Cloudflare's always-passes Turnstile **test** key (the
-real widget errors on `localhost`), and doesn't serve Functions, so submissions
-404 there. Test the real endpoint with `npm run build && npx wrangler pages dev dist`.
-
-Other defenses on the endpoint, in case they look redundant: a honeypot field
-(bots fill it; the handler returns 200 and discards, so they learn nothing),
-length/format validation, CRLF stripping on anything reaching a header, and no
-CORS headers at all — one form, one origin. There is deliberately no rate
-limiting; add a WAF rule on `/api/contact` if abuse shows up.
+- **With a `wrangler.toml`, Cloudflare ignores plaintext dashboard variables**
+  (secrets still apply). Plaintext vars go in `wrangler.toml` `[vars]`; secrets
+  in the dashboard or `wrangler pages secret put`, never in `[vars]`.
+- The Turnstile **site key is committed** (`TURNSTILE_SITE_KEY` in `site.ts`;
+  `PUBLIC_TURNSTILE_SITE_KEY` overrides). Env-only once silently shipped a
+  form-less Contact page — don't revert.
+- `astro dev` uses Turnstile's always-passes test key and serves no Functions
+  (submissions 404). Test with `npm run build && npx wrangler pages dev dist`.
+- Endpoint defenses, in case they look redundant: honeypot (returns 200 and
+  discards), length/format validation, CRLF stripping on header values, no CORS.
+  No rate limiting by design — add a WAF rule on `/api/contact` if needed.
 
 ## Security headers
 
-`public/_headers` sets CSP, HSTS, `X-Frame-Options`, `Referrer-Policy` and
-`Permissions-Policy` site-wide. Only Pages (or `wrangler pages dev dist`)
-applies it — `astro dev`/`preview` don't. The CSP allows exactly
-`challenges.cloudflare.com` (Turnstile), Cloudflare Web Analytics
-(`static.cloudflareinsights.com`, `cloudflareinsights.com`), and GA
+`public/_headers` sets CSP, HSTS, `X-Frame-Options`, `Referrer-Policy`,
+`Permissions-Policy` and cache lifetimes (`/_astro/*`, `/fonts/*`). Only Pages or
+`wrangler pages dev dist` applies it — not `astro dev`/`preview`. The CSP allows
+exactly Turnstile (`challenges.cloudflare.com`), Cloudflare Web Analytics
+(`static.cloudflareinsights.com`, `cloudflareinsights.com`) and GA
 (`www.googletagmanager.com`, `*.google-analytics.com`, `*.analytics.google.com`);
-a new third-party origin must be added in the same change or it's silently blocked.
-Cloudflare Web Analytics is injected at the edge by a `simonrook.com` zone
-setting — it's not in the source and doesn't appear on `*.pages.dev` — and it's
-cookieless, so it deliberately runs outside the consent banner. GA is the trap: it
-loads only after Accept, so test by accepting the banner and watching the
-console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
-`style=""` attributes.
+`font-src`/`style-src` are `'self'`. A new third-party origin must be added in
+the same change or it's silently blocked. Web Analytics is injected at the edge
+by a zone setting (not in the source, absent on `*.pages.dev`) and is
+cookieless, so it runs outside the consent banner. GA is the trap: it loads only
+after Accept, so test by accepting and watching the console. `'unsafe-inline'`
+covers the consent script, JSON-LD and `style=""` attributes.
+
+## SEO
+
+- One author entity: `PERSON_SCHEMA` in `site.ts` (`@id` `…/#person`) is the
+  full node on Home and About; everything else (a book's `author`) uses
+  `PERSON_REF`. Home adds a `WebSite` (`…/#website`), About a `ProfilePage`,
+  `/books/` an `ItemList`, book pages `Book` + `BreadcrumbList`. Don't create a
+  second, unlinked `Person`.
+- Book pages send `og:type=book`, the book's `socialImage` (else the cover) as
+  the share image, and the cover as the `Book` schema image — both built via
+  `getImage` and made absolute with `SITE_URL`.
+- Sitemap `lastmod` is git-derived in `astro.config.mjs` (`PAGE_SOURCES` maps
+  routes to source files — add new pages there). Cloudflare Pages builds from a
+  shallow clone, so the config runs `git fetch --unshallow` first; if that
+  fails, `lastmod` is omitted rather than giving every page the same date.
 
 ## Conventions
 
@@ -184,15 +185,11 @@ console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
   `src/config/site.ts`. Setting that to `null` removes the tag and the consent
   banner site-wide. `ANALYTICS_ID` in the same file is null outside production,
   so `astro dev` traffic never reaches the property.
-- Consent is **opt-in and strict**: `src/components/CookieConsent.astro` owns
-  the banner and is the only thing that loads `gtag.js`, by creating the script
-  element in the accept path. Nothing is requested from Google before a visitor
-  agrees — don't "simplify" this by putting the tag back in `Layout.astro`'s
-  head, which would disclose visitor IPs to Google before consent and defeat the
-  whole mechanism. The choice is stored in `localStorage` (not a cookie);
-  withdrawing it clears `_ga*` cookies and reloads. Any element with
-  `data-cookie-preferences` reopens the banner — the footer uses this, and the
-  privacy policy links it inline.
+- Consent is **opt-in and strict**: `CookieConsent.astro` is the only thing
+  that loads `gtag.js`, from the accept path. Don't move the tag into
+  `Layout.astro`'s head — that discloses visitor IPs to Google before consent.
+  The choice lives in `localStorage`; withdrawing clears `_ga*` cookies and
+  reloads. Any `data-cookie-preferences` element reopens the banner.
 - Placeholder values are flagged inline with a `PLACEHOLDER:` comment (the
   Goodreads and BookBub slots). Don't quietly invent real-looking replacements —
   either leave the placeholder or ask.
@@ -202,15 +199,12 @@ console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
 - `astro.config.mjs` `site`, `src/config/site.ts` `SITE_URL`, and
   `public/robots.txt`'s `Sitemap:` line must all point at the same domain
   (`simonrook.com`) — nothing else in the codebase hardcodes it.
-- Retailer links are plain links. If affiliate tagging is ever added, the
-  privacy policy and any applicable disclosure requirements must be updated in
-  the same change — it currently states outright that no affiliate tracking is
-  used.
+- Retailer links are plain links; the privacy policy says so. Affiliate tagging
+  would need the policy and disclosures updated in the same change.
 - The privacy policy describes actual behavior. Adding a newsletter, embeds, or
   further third-party scripts means updating `src/pages/privacy-policy.astro`
   and its `lastUpdated` date — and the CSP in `public/_headers` — in the same
   change. It currently documents Google Analytics, Cloudflare Web Analytics, the
-  contact form, Turnstile, and Cloudflare hosting, and states that fonts are
-  self-hosted — keep that list true. Fonts live in `public/fonts/` with their
-  OFL licenses; don't reintroduce Google Fonts (or any font CDN) without
-  updating the policy and the CSP's `font-src`/`style-src`.
+  contact form (name, email, optional subject, message), Turnstile, and
+  Cloudflare hosting, and states that fonts are self-hosted — keep that true.
+  Reintroducing a font CDN means updating the policy and the CSP.

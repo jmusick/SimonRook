@@ -6,20 +6,30 @@ import { execFileSync } from 'node:child_process';
 
 /**
  * Sitemap `lastmod` from git: the newest commit touching a page's source files.
- * A shallow clone would stamp every page with the same latest commit, which is
- * worse than no date, so lastmod is left out entirely in that case (and if git
- * isn't available at all).
+ *
+ * That needs full history. Cloudflare Pages builds from a shallow clone, so
+ * when the checkout is shallow the build fetches the rest first (the repo is
+ * small; this takes seconds). If that fails too, lastmod is left out entirely —
+ * a shallow history would stamp every page with the same latest commit, which
+ * is worse than no date. No git at all also means no lastmod.
  */
-function git(...args) {
+function git(args, timeout = 10_000) {
 	try {
-		return execFileSync('git', args, { encoding: 'utf8' }).trim();
+		return execFileSync('git', args, {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			timeout,
+		}).trim();
 	} catch {
 		return '';
 	}
 }
-const canDateFromGit = git('rev-parse', '--is-shallow-repository') === 'false';
+// 'true' | 'false' | '' (not a git checkout, or git missing)
+const shallowState = () => git(['rev-parse', '--is-shallow-repository']);
+if (shallowState() === 'true') git(['fetch', '--unshallow', '--quiet'], 60_000);
+const canDateFromGit = shallowState() === 'false';
 function lastCommitDate(...files) {
-	const iso = git('log', '-1', '--format=%cI', '--', ...files);
+	const iso = git(['log', '-1', '--format=%cI', '--', ...files]);
 	return iso ? new Date(iso).toISOString() : undefined;
 }
 

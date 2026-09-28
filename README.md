@@ -55,17 +55,16 @@ separate set of variables — they need their own copies to run the form.
 
 [public/_headers](public/_headers) gives every route a Content-Security-Policy,
 HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
-`Cross-Origin-Opener-Policy` and `Permissions-Policy`, and long-caches
-`/_astro/*`. Pages applies it on deploy; `astro dev` and `astro preview` don't,
+`Cross-Origin-Opener-Policy` and `Permissions-Policy`, long-caches the hashed
+`/_astro/*` files, and caches `/fonts/*` for 30 days. Pages applies it on deploy; `astro dev` and `astro preview` don't,
 so use `wrangler pages dev dist` to see it locally.
 
 The CSP allows only Cloudflare Turnstile, Cloudflare Web Analytics and Google
 Analytics; fonts are self-hosted, so `font-src` is `'self'`. Cloudflare Web
 Analytics isn't in the source: a `simonrook.com` zone setting injects its
-beacon at the edge, so it doesn't appear on `*.pages.dev` previews. It's cookieless and runs without consent;
-GA stays opt-in.
-Adding a new third-party script, font, or embed means adding its origin there
-too. After a deploy that touches the policy:
+beacon at the edge, so it doesn't appear on `*.pages.dev` previews. It's
+cookieless and runs without consent; GA stays opt-in. Adding a new third-party
+script, font, or embed means adding its origin there too. After a deploy that touches the policy:
 
 ```bash
 curl -I https://simonrook.com/
@@ -105,6 +104,32 @@ have the fallback, drop the `vite` block and stop the stale process instead.
 | `/404` | Not found |
 
 Sitemap and `robots.txt` are generated/served automatically.
+
+## SEO
+
+[src/layouts/Layout.astro](src/layouts/Layout.astro) emits the title,
+description, canonical, robots, Open Graph and Twitter tags for every page,
+including `og:image:width`/`height` and `twitter:site`/`creator` (the handle is
+read from the X entry in `SOCIALS`). Pages pass an optional JSON-LD object:
+
+| Page | Structured data |
+| --- | --- |
+| `/` | `WebSite` + `Person` |
+| `/about/` | `ProfilePage` → the same `Person` |
+| `/books/` | `ItemList` of the titles |
+| `/books/<slug>/` | `Book` (author → the `Person`) + `BreadcrumbList`; `og:type` is `book` |
+
+The `Person` node is defined once in [src/config/site.ts](src/config/site.ts)
+(`PERSON_SCHEMA`, `@id` `https://simonrook.com/#person`) and referenced by
+`@id` everywhere else, so search engines see one author. Book pages share the
+book's `socialImage` card (1200×630) when it has one, otherwise the cover; the
+`Book` schema image is always the cover. All four page types validate with 0
+errors on the Schema.org validator (checked 2026-09-28).
+
+The sitemap's `lastmod` comes from the newest git commit touching each page's
+source files (`astro.config.mjs`). Cloudflare Pages builds from a shallow
+clone, so the build unshallows it first (`git fetch --unshallow`); if that
+fails, `lastmod` is omitted rather than stamping every page with the same date.
 
 One server-side route, `POST /api/contact`
 ([functions/api/contact.ts](functions/api/contact.ts)), backs the contact form —
@@ -176,9 +201,11 @@ Live and verified:
   until a URL is filled in — the entries are slots, not claims that the profiles
   exist.
 - `public/favicon.png` is a generated bronze-on-navy `SR` monogram — a
-  legible stand-in, not a designed mark. `public/og.png` is composited from the
-  book cover. Both were generated with Pillow and can be replaced with real
-  brand assets at any time.
+  legible stand-in, not a designed mark; `public/apple-touch-icon.png` is the
+  same mark at 180×180. `public/og.png` (the site-wide share image) is
+  composited from the book cover, and `src/assets/stoic-mind-og.png` is a copy
+  of it used as the book's own share card. All were generated, not designed,
+  and can be replaced with real brand assets at any time.
 
 ## Project context
 
@@ -200,5 +227,6 @@ Not built, deliberately — the current scope is a lean author landing site.
   analytics coverage outside the EU/UK where it isn't required. A small Pages
   Function reporting `request.cf.country` could show it only where it's needed.
 - **A second title.** Append a `Book` to [src/data/books.ts](src/data/books.ts)
-  and drop its cover in `src/assets/`. The routes, cards, and sitemap follow
-  automatically.
+  and drop its cover in `src/assets/` — plus, optionally, a 1200×630
+  `socialImage` card, without which shares use the cover. The routes, cards,
+  structured data, and sitemap follow automatically.
