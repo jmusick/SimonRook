@@ -126,6 +126,39 @@ export const PROFILE_URLS = ACTIVE_SOCIALS.filter((s) => s.isProfile !== false).
 );
 
 /**
+ * The author's X handle ("@SimonRookAuthor") for `twitter:site` /
+ * `twitter:creator`, read off the X entry in SOCIALS so the two can't drift.
+ * Null (and the tags omitted) while that entry has no URL.
+ */
+const xHref = ACTIVE_SOCIALS.find((s) => s.icon === "simple-icons:x")?.href;
+export const X_HANDLE: string | null = xHref
+	? `@${new URL(xHref).pathname.replace(/^\/+|\/+$/g, "")}`
+	: null;
+
+/**
+ * Stable JSON-LD node IDs. Every page that mentions the author or the site
+ * points at these, so search engines see one Person and one WebSite rather than
+ * a separate, unlinked node per page.
+ */
+export const PERSON_ID = `${SITE_URL}/#person`;
+export const WEBSITE_ID = `${SITE_URL}/#website`;
+
+/** The author as a schema.org Person — the full node, emitted on Home and About. */
+export const PERSON_SCHEMA = {
+	"@type": "Person",
+	"@id": PERSON_ID,
+	name: SITE_NAME,
+	url: `${SITE_URL}/`,
+	jobTitle: SITE_ROLE,
+	description: SITE_DESCRIPTION,
+	// Only emitted once at least one profile URL is filled in above.
+	...(PROFILE_URLS.length > 0 && { sameAs: PROFILE_URLS }),
+};
+
+/** A reference to PERSON_SCHEMA for use elsewhere (a book's `author`, etc.). */
+export const PERSON_REF = { "@type": "Person", "@id": PERSON_ID, name: SITE_NAME };
+
+/**
  * The inbox contact-form mail is delivered to.
  *
  * No longer published on the site: the Contact page routes everything through

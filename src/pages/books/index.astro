@@ -6,12 +6,26 @@ import { BOOKS } from "../../data/books";
 
 const canonicalUrl = `${SITE_URL}/books/`;
 const description = `Books by ${SITE_NAME} — practical philosophy for thoughtful people who overthink.`;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	name: `Books by ${SITE_NAME}`,
+	url: canonicalUrl,
+	itemListElement: BOOKS.map((book, i) => ({
+		"@type": "ListItem",
+		position: i + 1,
+		name: book.title,
+		url: `${SITE_URL}/books/${book.slug}/`,
+	})),
+};
 ---
 
 <Layout
 	title={`Books — ${SITE_NAME}`}
 	description={description}
 	canonicalUrl={canonicalUrl}
+	structuredData={structuredData}
 	active="books"
 >
 	<div class="page">

@@ -1,18 +1,28 @@
 ---
 import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
-import { SITE_NAME, SITE_URL } from "../config/site";
+import { PERSON_SCHEMA, SITE_NAME, SITE_URL, WEBSITE_ID } from "../config/site";
 import { FEATURED_BOOK } from "../data/books";
 
 const canonicalUrl = `${SITE_URL}/about/`;
 const description = `About ${SITE_NAME} — how these books are written, who they are for, and what they promise.`;
 const book = FEATURED_BOOK;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "ProfilePage",
+	url: canonicalUrl,
+	name: `About ${SITE_NAME}`,
+	isPartOf: { "@id": WEBSITE_ID },
+	mainEntity: PERSON_SCHEMA,
+};
 ---
 
 <Layout
 	title={`About — ${SITE_NAME}`}
 	description={description}
 	canonicalUrl={canonicalUrl}
+	structuredData={structuredData}
 	active="about"
 >
 	<div class="page page-narrow">

@@ -3,11 +3,13 @@ import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
 import {
-	PROFILE_URLS,
+	PERSON_ID,
+	PERSON_SCHEMA,
 	SITE_DESCRIPTION,
 	SITE_NAME,
 	SITE_TAGLINE,
 	SITE_URL,
+	WEBSITE_ID,
 } from "../config/site";
 import { FEATURED_BOOK, formatPublished, primaryRetailer } from "../data/books";
 
@@ -18,13 +20,18 @@ const canonicalUrl = `${SITE_URL}/`;
 
 const structuredData = {
 	"@context": "https://schema.org",
-	"@type": "Person",
-	name: SITE_NAME,
-	url: canonicalUrl,
-	jobTitle: "Author",
-	description: SITE_DESCRIPTION,
-	// Only emitted once at least one profile URL is filled in in site.ts.
-	...(PROFILE_URLS.length > 0 && { sameAs: PROFILE_URLS }),
+	"@graph": [
+		{
+			"@type": "WebSite",
+			"@id": WEBSITE_ID,
+			name: SITE_NAME,
+			url: canonicalUrl,
+			description: SITE_DESCRIPTION,
+			inLanguage: "en",
+			publisher: { "@id": PERSON_ID },
+		},
+		PERSON_SCHEMA,
+	],
 };
 ---
 

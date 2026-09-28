@@ -2,7 +2,7 @@
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import CookieConsent from "../components/CookieConsent.astro";
-import { ANALYTICS_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from "../config/site";
+import { ANALYTICS_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL, X_HANDLE } from "../config/site";
 
 interface Props {
 	title: string;
@@ -10,6 +10,11 @@ interface Props {
 	canonicalUrl: string;
 	socialImageUrl?: string;
 	socialImageAlt?: string;
+	/** Pixel size of `socialImageUrl`. The defaults match /og.png. */
+	socialImageWidth?: number | string;
+	socialImageHeight?: number | string;
+	/** Open Graph object type — `book` on book pages, `website` elsewhere. */
+	ogType?: "website" | "book" | "profile";
 	robots?: string;
 	structuredData?: Record<string, unknown> | Record<string, unknown>[];
 	active?: "home" | "books" | "about" | "contact";
@@ -21,6 +26,9 @@ const {
 	canonicalUrl,
 	socialImageUrl = `${SITE_URL}/og.png`,
 	socialImageAlt = `${SITE_NAME} — The Stoic Mind for Overthinkers`,
+	socialImageWidth = 1200,
+	socialImageHeight = 630,
+	ogType = "website",
 	robots = "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
 	structuredData,
 	active,
@@ -52,13 +60,17 @@ const showConsentBanner = GA_MEASUREMENT_ID !== null;
 		<link rel="canonical" href={canonicalUrl} />
 		<meta property="og:site_name" content={SITE_NAME} />
 		<meta property="og:locale" content="en_US" />
-		<meta property="og:type" content="website" />
+		<meta property="og:type" content={ogType} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:image" content={socialImageUrl} />
+		<meta property="og:image:width" content={String(socialImageWidth)} />
+		<meta property="og:image:height" content={String(socialImageHeight)} />
 		<meta property="og:image:alt" content={socialImageAlt} />
 		<meta name="twitter:card" content="summary_large_image" />
+		{X_HANDLE && <meta name="twitter:site" content={X_HANDLE} />}
+		{X_HANDLE && <meta name="twitter:creator" content={X_HANDLE} />}
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:url" content={canonicalUrl} />
