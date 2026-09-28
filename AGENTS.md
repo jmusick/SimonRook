@@ -163,7 +163,7 @@ limiting; add a WAF rule on `/api/contact` if abuse shows up.
 
 `public/_headers` sets CSP, HSTS, `X-Frame-Options`, `Referrer-Policy` and
 `Permissions-Policy` site-wide. Only Pages (or `wrangler pages dev dist`)
-applies it — `astro dev`/`preview` don't. The CSP allows exactly Google Fonts,
+applies it — `astro dev`/`preview` don't. The CSP allows exactly
 `challenges.cloudflare.com` (Turnstile), Cloudflare Web Analytics
 (`static.cloudflareinsights.com`, `cloudflareinsights.com`), and GA
 (`www.googletagmanager.com`, `*.google-analytics.com`, `*.analytics.google.com`);
@@ -210,5 +210,7 @@ console. `'unsafe-inline'` is needed for the inline consent script, JSON-LD, and
   further third-party scripts means updating `src/pages/privacy-policy.astro`
   and its `lastUpdated` date — and the CSP in `public/_headers` — in the same
   change. It currently documents Google Analytics, Cloudflare Web Analytics, the
-  contact form, Turnstile, Cloudflare hosting, and Google Fonts — keep that
-  list true.
+  contact form, Turnstile, and Cloudflare hosting, and states that fonts are
+  self-hosted — keep that list true. Fonts live in `public/fonts/` with their
+  OFL licenses; don't reintroduce Google Fonts (or any font CDN) without
+  updating the policy and the CSP's `font-src`/`style-src`.

@@ -10,9 +10,10 @@ const canonicalUrl = `${SITE_URL}/privacy-policy/`;
  *
  * What this page must keep describing accurately, as of this date: Google
  * Analytics 4, Cloudflare Web Analytics, the contact form, Cloudflare Turnstile,
- * Cloudflare Email Sending, Cloudflare Pages hosting, and Google Fonts.
+ * Cloudflare Email Sending, Cloudflare Pages hosting, and self-hosted fonts (no
+ * Google Fonts).
  */
-const lastUpdated = "September 23, 2026";
+const lastUpdated = "September 28, 2026";
 ---
 
 <Layout
@@ -120,9 +121,8 @@ const lastUpdated = "September 23, 2026";
 			<h2>Fonts</h2>
 
 			<p>
-				Typefaces are loaded from Google Fonts. Your browser therefore makes a request to
-				Google's servers, which discloses your IP address and user-agent to Google. No
-				identifying information is sent by this site along with that request.
+				Typefaces are served from this site itself. Loading a page makes no request to a
+				font service such as Google Fonts.
 			</p>
 
 			<h2>Links to other sites</h2>
@@ -141,8 +141,8 @@ const lastUpdated = "September 23, 2026";
 
 			<p>
 				Nothing collected here is sold, rented, or shared for advertising. The only
-				third parties involved are the ones named above — Google, for analytics and
-				fonts, and Cloudflare, for hosting, visit statistics, spam checking, and
+				third parties involved are the ones named above — Google, for analytics if
+				you accept it, and Cloudflare, for hosting, visit statistics, spam checking, and
 				delivering form mail —
 				each acting under its own privacy terms. Analytics data is retained by Google
 				according to the property's settings; contact-form mail is kept in an ordinary

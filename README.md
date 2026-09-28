@@ -59,10 +59,10 @@ HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
 `/_astro/*`. Pages applies it on deploy; `astro dev` and `astro preview` don't,
 so use `wrangler pages dev dist` to see it locally.
 
-The CSP allows only Google Fonts, Cloudflare Turnstile, Cloudflare Web
-Analytics and Google Analytics. Cloudflare Web Analytics isn't in the source:
-a `simonrook.com` zone setting injects its beacon at the edge, so it doesn't
-appear on `*.pages.dev` previews. It's cookieless and runs without consent;
+The CSP allows only Cloudflare Turnstile, Cloudflare Web Analytics and Google
+Analytics; fonts are self-hosted, so `font-src` is `'self'`. Cloudflare Web
+Analytics isn't in the source: a `simonrook.com` zone setting injects its
+beacon at the edge, so it doesn't appear on `*.pages.dev` previews. It's cookieless and runs without consent;
 GA stays opt-in.
 Adding a new third-party script, font, or embed means adding its origin there
 too. After a deploy that touches the policy:
@@ -127,7 +127,9 @@ Overthinkers* so the site and the book read as one object:
 
 Type: **Oswald** (condensed sans) for display, echoing the cover title;
 **Source Serif 4** for reading copy, echoing the cover subtitle; **Inter** for
-UI chrome (nav, buttons, labels). All three load from Google Fonts.
+UI chrome (nav, buttons, labels). All three are self-hosted from
+[public/fonts/](public/fonts/) (variable woff2, latin + latin-ext, SIL OFL —
+licenses alongside), declared at the top of `universal.css`.
 
 All tokens and component rules are in
 [public/universal.css](public/universal.css). There is no CSS framework and no
@@ -197,9 +199,6 @@ Not built, deliberately — the current scope is a lean author landing site.
 - **Geo-gating the consent banner.** Everyone sees it today, which costs some
   analytics coverage outside the EU/UK where it isn't required. A small Pages
   Function reporting `request.cf.country` could show it only where it's needed.
-- **Self-hosted fonts.** Google Fonts discloses visitor IPs to Google, which
-  the privacy policy currently has to disclose. Downloading the three families
-  into `public/fonts/` would remove that dependency and the disclosure.
 - **A second title.** Append a `Book` to [src/data/books.ts](src/data/books.ts)
   and drop its cover in `src/assets/`. The routes, cards, and sitemap follow
   automatically.
